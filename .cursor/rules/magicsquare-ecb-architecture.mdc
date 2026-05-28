@@ -1,0 +1,72 @@
+---
+description: ECB layers, dependency direction, folder layout, Report 02 contracts
+globs: "{src/**,tests/**}"
+alwaysApply: false
+---
+
+# MagicSquare ECB Architecture
+
+## Purpose
+
+Keep Domain pure; boundary validates I/O; control orchestrates. Matches Report 02 with ECB folder names.
+
+## Layers
+
+| Layer | Package | Role |
+|-------|---------|------|
+| **entity** | `src/entity` | Domain data and rules only (`MagicGrid`, `PuzzleSolver`, `User`, D-* invariants). **No** UI/IO imports. |
+| **control** | `src/control` | Use-case flow: call entity, optional repository; connect boundary ↔ entity. |
+| **boundary** | `src/boundary` | Input validation, `int[6]` or fixed Error schema **before** domain; UI/API/CLI. |
+
+## Dependency direction
+
+```text
+boundary → control → entity
+```
+
+- **entity** must **not** import `boundary`, `control`, or `tests.*`.
+- **boundary** must not embed domain algorithms (sum 34, solve order) — delegate to control/entity.
+
+## Contracts (pointers)
+
+- Error `code` + `message`: Report 02 §2.4 — **exact** strings; update UI tests together.
+- Traceability: Invariant `D-*` ↔ Test-ID `DT-*` / `UT-*`.
+
+## Folder layout
+
+```text
+src/
+  boundary/     # validator, presenter
+  control/      # puzzle_facade (optional persist)
+  entity/       # magic_grid, puzzle_solver, user, ...
+tests/
+  boundary/     # UT-* (Domain mocked)
+  control/
+  entity/       # DT-* — no __init__.py (avoids import shadow)
+  integration/  # IT-*
+```
+
+## Must
+
+- Put new domain types under `src/entity/`.
+- Put boundary validation and error mapping under `src/boundary/`.
+- Use `user_constants`-style modules for domain constants (no scattered literals).
+
+## Must not
+
+- Call `MatrixRepository` directly from boundary (default learning path: via control).
+- Add `tests/entity/__init__.py` (conflicts with `src/entity` package name).
+
+## Examples
+
+**BAD — entity imports boundary**
+
+```python
+from boundary.validator import validate_grid  # forbidden
+```
+
+**GOOD — boundary calls control/entity**
+
+```python
+result = puzzle_facade.solve(grid)
+```

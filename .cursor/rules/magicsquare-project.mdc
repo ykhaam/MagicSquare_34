@@ -1,0 +1,54 @@
+---
+description: MagicSquare project identity, contracts, and AI workflow
+alwaysApply: true
+---
+
+# MagicSquare Project
+
+## Purpose
+
+4×4 magic-square TDD practice: layer separation, contract tests, refactoring over algorithm difficulty.
+
+## Must
+
+- Treat `Report/01_Magic-Square-Problem-Definition-Report.md` and `Report/02_Magic-Square-Dual-Track-TDD-Design.md` as SSOT; Report 02 wins on contract conflicts.
+- Branch flow: `spec → red → green → refactoring → develop` (no three phase branches at once).
+- Dual-Track: Logic `DT-*` in `tests/entity/`; Boundary `UT-*` in `tests/boundary/` — one slice per Red-Green-Refactor cycle.
+
+## Public contract (fixed)
+
+| Item | Rule |
+|------|------|
+| Input | `list[list[int]]` 4×4; `0` = empty; exactly 2 empties; values `0` or `1..16`; no duplicate non-zero |
+| Success output | `list[int]` length 6: `[r1,c1,n1,r2,c2,n2]`; coordinates **1-index** |
+| Magic sum | 34 when grid is complete |
+
+## AI behavior — before coding
+
+- Check related `tests/` files and Report 02 Test-ID for the slice.
+- Check git branch matches TDD phase (`red` | `green` | `refactoring`) when applicable.
+- Confirm layer (`boundary` | `control` | `entity`) and ECB dependency direction.
+
+## AI behavior — during coding
+
+- Never add public functions without type hints.
+- Never violate ECB (entity must not import boundary/control).
+- If no failing test exists for the slice, propose tests first — do not add `src/` production code.
+- On TDD rule violation: stop and emit `[TDD WARNING]` with phase and rule id.
+
+## AI behavior — after coding
+
+- Run pytest on touched paths; report Red/Green.
+- Summarize whether changed files match phase rules (e.g. red = tests only).
+- Scan for forbidden patterns (`print`, bare `except`, magic numbers); suggest fixes.
+
+## Must not
+
+- Bulk `src/` implementation without RED, even if the user asks.
+- Weaken tests to reach Green.
+- Create README inside `.cursor/` or `.cursor/rules/`.
+
+## Pointers
+
+- Detailed rules: `.cursor/rules/*.mdc`
+- Phase 03 notes: `Report/03_Magic-Square-Cursorrules-and-Phase03-Kickoff-Report.md`
