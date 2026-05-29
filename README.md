@@ -186,11 +186,11 @@ MagicSquare_/
 | **DT-E01 ~ D-SOL** | Entity/Control Track B 전 슬라이스 | ✅ GREEN |
 | **DATA-T01 ~ T05** | InMemory 저장소 | ✅ |
 | **IT-N01 ~ IT-E04** | 통합 (Boundary→Control→Entity) | ✅ |
-| **PyQt6 GUI** | `python -m boundary.screen.app` | ✅ (optional `[gui]`) |
+| **PyQt6 GUI** | `python -m boundary.screen` · `magicsquare-gui` | ✅ (optional `[gui]`) |
 | **`stabilize/refactoring`** | 구조 정리 · 커버리지 80%+ | ⏳ 선택 |
 | `develop` / `main` merge | MVP 마일스톤 | ⏳ |
 
-상세 GREEN 세션: [Report 09](./Report/09_Magic-Square-AC-FR-01-01-Boundary-GREEN-Session-Report.md)
+상세 세션: [Report 09](./Report/09_Magic-Square-AC-FR-01-01-Boundary-GREEN-Session-Report.md) (AC-FR-01-01) · [Report 10](./Report/10_Magic-Square-Dual-Track-MVP-and-Screen-GUI-Session-Report.md) (MVP · GUI)
 
 ---
 
@@ -205,7 +205,8 @@ MagicSquare_/
 ```bash
 python -m venv .venv
 .\.venv\Scripts\pip install -e ".[gui]"
-.\.venv\Scripts\python -m boundary.screen.app
+.\.venv\Scripts\python -m boundary.screen
+# 또는: magicsquare-gui
 ```
 
 ---
@@ -329,4 +330,4 @@ python -m pytest \
 | 2026-05-28 | Report 02 · Prompting 02 · `spec` 브랜치 |
 | 2026-05-28 | Report 03 · Prompting 03 · `.cursorrules` · `User` entity |
 | 2026-05-28 | Report 04 · Prompting 04 · `.cursor/rules/*.mdc` · README 01~04 동기화 |
-| 2026-05-29 | Track A/B GREEN 완료 · Data/IT · PyQt6 GUI · README 동기화 |
+| 2026-05-29 | Track A/B GREEN 완료 · Data/IT · PyQt6 GUI · [Report 10](./Report/10_Magic-Square-Dual-Track-MVP-and-Screen-GUI-Session-Report.md) |
