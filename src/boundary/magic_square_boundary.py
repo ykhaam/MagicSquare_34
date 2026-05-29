@@ -6,7 +6,8 @@ from collections.abc import Callable
 from typing import Any
 
 from boundary.input_validator import InputValidator
-from boundary.schemas import ErrorResponse
+from boundary.schemas import ErrorResponse, FailureResponse
+from entity.exceptions import UnsolvableDomainError
 
 
 class MagicSquareBoundary:
@@ -21,17 +22,34 @@ class MagicSquareBoundary:
         self._resolve = resolve
         self._validator = InputValidator()
 
-    def solve(self, grid: list[list[int]] | None) -> ErrorResponse:
-        """Validate grid size; return ErrorResponse without calling resolve on failure.
+    def solve(self, grid: list[list[int]] | None) -> ErrorResponse | list[int]:
+        """Validate grid; return ErrorResponse or delegate to resolve on success.
 
         Args:
-            grid: 4x4 puzzle grid, or None when absent.
+            grid: 4×4 puzzle grid, or None when absent.
 
         Returns:
-            ErrorResponse when grid is None or not 4x4.
+            ErrorResponse on validation failure, otherwise resolve result.
         """
         failure = self._validator.validate(grid)
-        return ErrorResponse(
-            code=failure.error.code,
-            message=failure.error.message,
-        )
+        if failure is not None:
+            return ErrorResponse(
+                code=failure.error.code,
+                message=failure.error.message,
+            )
+        try:
+            return self._resolve(grid)
+        except UnsolvableDomainError as exc:
+            return ErrorResponse(code=exc.code, message=exc.message)
+
+
+class UIBoundary(MagicSquareBoundary):
+    """UI-facing boundary alias that injects Control ``execute`` instead of resolve."""
+
+    def __init__(self, execute: Callable[..., Any]) -> None:
+        """Wire Control execute callable.
+
+        Args:
+            execute: Control-layer puzzle solver entrypoint.
+        """
+        super().__init__(resolve=execute)

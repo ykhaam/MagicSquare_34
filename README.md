@@ -13,7 +13,7 @@
 |-------|------|--------|-----------|------|
 | **01** | 관찰 · Why · 문제 정의 · Invariant I1~I5 | [01](./Report/01_Magic-Square-Problem-Definition-Report.md) | [01](./Prompting/01_Magic-Square-Problem-Definition-Prompt.md) | ✅ |
 | **02** | Dual-Track(UI+Logic) TDD · Clean Architecture 설계 | [02](./Report/02_Magic-Square-Dual-Track-TDD-Design.md) | [02](./Prompting/02_Magic-Square-Prompt.md) | ✅ |
-| **03** | `.cursorrules` YAML · ECB `User` · TDD 구현 착수 | [03](./Report/03_Magic-Square-Cursorrules-and-Phase03-Kickoff-Report.md) | [03](./Prompting/03_Magic-Square-Phase03-Cursorrules-Prompt.md) | 🔄 진행 중 |
+| **03** | `.cursorrules` YAML · ECB `User` · TDD 구현 | [03](./Report/03_Magic-Square-Cursorrules-and-Phase03-Kickoff-Report.md) | [03](./Prompting/03_Magic-Square-Phase03-Cursorrules-Prompt.md) | ✅ |
 | **04** | Cursor 규칙 `.cursor/rules/*.mdc` 마이그레이션 | [04](./Report/04_Magic-Square-Cursor-Rules-Migration-Report.md) | [04](./Prompting/04_Magic-Square-Cursor-Rules-Migration-Prompt.md) | ✅ |
 
 ---
@@ -136,12 +136,15 @@ MagicSquare_/
 ├── .cursor/rules/            # magicsquare-*.mdc (실행 규칙 SSOT)
 ├── pyproject.toml
 ├── src/
-│   ├── boundary/             # InputValidator, schemas (Track A)
-│   ├── control/              # (예정) PuzzleSolver 진입
-│   └── entity/               # User · services (Track B)
+│   ├── boundary/             # InputValidator, UIBoundary, screen (Track A)
+│   ├── control/              # puzzle_solver.solution
+│   ├── data/                 # InMemoryMatrixRepository
+│   └── entity/               # MagicGrid, services (Track B)
 ├── tests/
 │   ├── boundary/             # UT-* · AC-FR-* (Mock 허용)
-│   └── entity/               # DT-* · D-* (Mock 금지)
+│   ├── entity/               # DT-* · D-* (Mock 금지)
+│   ├── data/                 # DATA-T*
+│   └── integration/          # IT-*
 ├── Report/
 │   ├── 01_Magic-Square-Problem-Definition-Report.md
 │   ├── 02_Magic-Square-Dual-Track-TDD-Design.md
@@ -179,10 +182,12 @@ MagicSquare_/
 | Dual-Track 설계 | Report 02 · Prompting 02 | ✅ |
 | Cursor Rules `.mdc` | Report 04 · 5× `.mdc` | ✅ |
 | `.cursorrules` · `User` entity | Report 03 · Phase 03 kickoff | ✅ |
-| **AC-FR-01-01** | `InputValidator` · `test_ac_fr_01_01_*` 9건 | ✅ GREEN (`stabilize/green`) |
-| **`stabilize/green`** | **RED 1묶음** 최소 구현 (`src/` only) | 🔄 **현재 작업 브랜치 (유일한 stabilize/*)** |
-| `stabilize/red` | RED 3건/커밋 (`tests/` only) | ⏳ 브랜치 미생성 · 필요 시 `develop`에서 분기 |
-| `stabilize/refactoring` | 구조 정리 | ⏳ 브랜치 미생성 · **이번 범위 밖** |
+| **AC-FR-01-01 ~ U-OUT** | Boundary Track A 전 슬라이스 | ✅ GREEN (`stabilize/green`) |
+| **DT-E01 ~ D-SOL** | Entity/Control Track B 전 슬라이스 | ✅ GREEN |
+| **DATA-T01 ~ T05** | InMemory 저장소 | ✅ |
+| **IT-N01 ~ IT-E04** | 통합 (Boundary→Control→Entity) | ✅ |
+| **PyQt6 GUI** | `python -m boundary.screen.app` | ✅ (optional `[gui]`) |
+| **`stabilize/refactoring`** | 구조 정리 · 커버리지 80%+ | ⏳ 선택 |
 | `develop` / `main` merge | MVP 마일스톤 | ⏳ |
 
 상세 GREEN 세션: [Report 09](./Report/09_Magic-Square-AC-FR-01-01-Boundary-GREEN-Session-Report.md)
@@ -191,10 +196,17 @@ MagicSquare_/
 
 ## 다음 단계
 
-1. **`stabilize/red`:** 다음 **RED 묶음(3건)** 커밋 → **`stabilize/green`:** 같은 ID **GREEN 1커밋**으로 해당 묶음 전건 PASS (**REFACTOR 금지**)
-2. Track A·B **동시 RED/GREEN 금지**
-3. RED 잔여 2건 묶음은 **마지막 슬라이스 예외** (총 건수 % 3 ≠ 0일 때만)
-4. 계약 충돌 시 Report **02 우선** · AI 규칙은 **04 + `.mdc`**
+1. **`stabilize/refactoring`:** 중복 제거·커버리지 80%+ 측정 후 `develop` merge
+2. **File JSON `MatrixRepository`** (Report 02 옵션 B) — `IT-E03` / `DATA-T03`
+3. 계약 충돌 시 Report **02 우선** · AI 규칙은 **04 + `.mdc`**
+
+### GUI 실행 (PyQt6)
+
+```bash
+python -m venv .venv
+.\.venv\Scripts\pip install -e ".[gui]"
+.\.venv\Scripts\python -m boundary.screen.app
+```
 
 ---
 
@@ -226,14 +238,14 @@ MagicSquare_/
 | **A0-1** | `test_none_grid_returns_failure_with_invalid_size_code` · `[empty_list]` · `[four_empty_rows]` | `test_ac_fr_01_01_input_validation.py` 위 3 node | ✅ |
 | **A0-2** | `[size_3x4]` · `test_none_grid_message_matches_prd_section_8_1_exactly` · `test_none_grid_returns_exact_invalid_size_code_string` | 동일 파일 위 3 node | ✅ |
 | **A0-3** | `test_none_grid_returns_pydantic_failure_response_type` · scope 2건 | 동일 파일 위 3 node | ✅ |
-| **A1** | `test_validate_size.py` — none · empty · ragged | **GREEN-A1** — 위 3 node 동시 PASS | ⏳ |
-| **A2** | 3×4 · resolve 0회 · message exact | **GREEN-A2** | ⏳ |
-| **A3** | ErrorResponse type · scope (2건) | **GREEN-A3** | ⏳ |
-| **A4** | U-IN-04 · 05 · 06 | **GREEN-A4** | ⏳ |
-| **A5** | U-IN-07 · 08 (2건) | **GREEN-A5** | ⏳ |
-| **A6** | U-FLOW null · size · empty count | **GREEN-A6** | ⏳ |
-| **A7** | U-FLOW range · duplicate · ragged | **GREEN-A7** | ⏳ |
-| **A8** | U-OUT-01 · 02 · 03 | **GREEN-A8** | ⏳ |
+| **A1** | `test_validate_size.py` — none · empty · ragged | **GREEN-A1** — 위 3 node 동시 PASS | ✅ |
+| **A2** | 3×4 · resolve 0회 · message exact | **GREEN-A2** | ✅ |
+| **A3** | ErrorResponse type · scope (2건) | **GREEN-A3** | ✅ |
+| **A4** | U-IN-04 · 05 · 06 | **GREEN-A4** | ✅ |
+| **A5** | U-IN-07 · 08 (2건) | **GREEN-A5** | ✅ |
+| **A6** | U-FLOW null · size · empty count | **GREEN-A6** | ✅ |
+| **A7** | U-FLOW range · duplicate · ragged | **GREEN-A7** | ✅ |
+| **A8** | U-OUT-01 · 02 · 03 | **GREEN-A8** | ✅ |
 
 **pytest 예 (GREEN-A1):**
 
@@ -250,19 +262,18 @@ python -m pytest \
 - [x] **RED-A0-1** + **GREEN-A0-1**
 - [x] **RED-A0-2** + **GREEN-A0-2**
 - [x] **RED-A0-3** + **GREEN-A0-3**
-- [ ] **RED-A1** + **GREEN-A1** ← **다음**
-- [ ] **RED-A2** + **GREEN-A2**
-- [ ] **RED-A3** + **GREEN-A3**
-- [ ] **RED-A4** + **GREEN-A4**
-- [ ] **RED-A5** + **GREEN-A5**
-- [ ] **RED-A6** + **GREEN-A6**
-- [ ] **RED-A7** + **GREEN-A7**
-- [ ] **RED-A8** + **GREEN-A8**
+- [x] **RED-A1** + **GREEN-A1**
+- [x] **RED-A2** + **GREEN-A2**
+- [x] **RED-A3** + **GREEN-A3**
+- [x] **RED-A4** + **GREEN-A4**
+- [x] **RED-A5** + **GREEN-A5**
+- [x] **RED-A6** + **GREEN-A6**
+- [x] **RED-A7** + **GREEN-A7**
+- [x] **RED-A8** + **GREEN-A8**
 
 | Track A | RED+GREEN 묶음 | 남은 GREEN 커밋 |
 |---------|----------------|-----------------|
-| AC-FR-01-01 | A0-1~3 ✅ | — |
-| UT-E01 ~ U-OUT | A1~A8 ⏳ | **8** (묶음당 1커밋) |
+| AC-FR-01-01 ~ U-OUT | A0-1~A8 ✅ | — |
 
 ---
 
@@ -272,23 +283,23 @@ python -m pytest \
 
 | ID | RED (`stabilize/red`) | GREEN (`stabilize/green` · 묶음 전건 PASS) | 상태 |
 |----|-------------|----------------------------------|------|
-| **B1** | DT-E01 · E02 · E03 (`test_magic_grid.py` **미작성**) | **GREEN-B1** | ⏳ |
-| **B2** | DT-E04 · E05 · E06 | **GREEN-B2** | ⏳ |
-| **B3** | D-VAL-01 · 02 · 03 | **GREEN-B3** | ⏳ |
-| **B4** | D-VAL-04 · 05 · 06 | **GREEN-B4** | ⏳ |
-| **B5** | D-LOC-01 · D-MIS-01 · D-SOL-01 | **GREEN-B5** | ⏳ |
-| **B6** | D-SOL-02 · 03 · 04 | **GREEN-B6** | ⏳ |
+| **B1** | DT-E01 · E02 · E03 (`test_magic_grid.py`) | **GREEN-B1** | ✅ |
+| **B2** | DT-E04 · E05 · E06 | **GREEN-B2** | ✅ |
+| **B3** | D-VAL-01 · 02 · 03 | **GREEN-B3** | ✅ |
+| **B4** | D-VAL-04 · 05 · 06 | **GREEN-B4** | ✅ |
+| **B5** | D-LOC-01 · D-MIS-01 · D-SOL-01 | **GREEN-B5** | ✅ |
+| **B6** | D-SOL-02 · 03 · 04 | **GREEN-B6** | ✅ |
 
-- [ ] **RED-B1** + **GREEN-B1**
-- [ ] **RED-B2** + **GREEN-B2**
-- [ ] **RED-B3** + **GREEN-B3**
-- [ ] **RED-B4** + **GREEN-B4**
-- [ ] **RED-B5** + **GREEN-B5**
-- [ ] **RED-B6** + **GREEN-B6**
+- [x] **RED-B1** + **GREEN-B1**
+- [x] **RED-B2** + **GREEN-B2**
+- [x] **RED-B3** + **GREEN-B3**
+- [x] **RED-B4** + **GREEN-B4**
+- [x] **RED-B5** + **GREEN-B5**
+- [x] **RED-B6** + **GREEN-B6**
 
 | Track B | RED+GREEN 묶음 | 남은 GREEN 커밋 |
 |---------|----------------|-----------------|
-| DT-E ~ D-SOL | B1~B6 ⏳ | **6** (묶음당 1커밋) |
+| DT-E ~ D-SOL | B1~B6 ✅ | — |
 
 > **제외:** `tests/entity/test_user.py` — 학습용 `User` (마방진 백로그 밖)
 
@@ -296,15 +307,17 @@ python -m pytest \
 
 ### 커버리지 목표 (REFACTOR / develop merge 시)
 
-- [ ] Entity Logic: 95%+ branch
-- [ ] Boundary: 85%+ branch
+- [ ] Entity Logic: 95%+ branch (`pytest --cov=src/entity`)
+- [ ] Boundary: 85%+ branch (`pytest --cov=src/boundary`)
 - [ ] 전체: 80%+ (Report 02 §4.4)
+
+현재: `python -m pytest tests/ -q` → **67 passed**
 ---
 
 ## 범위
 
-- **포함**: 문제 정의, TDD 설계, Cursor 규칙, `User` entity, 테스트 인프라  
-- **진행 중**: `MagicGrid` / `PuzzleSolver` (`DT-*` per Report 02)
+- **포함**: 문제 정의, TDD 설계, Cursor 규칙, Dual-Track 구현, Data/InMemory, Integration, PyQt6 GUI  
+- **선택**: File JSON Repository (`IT-E03`), REFACTOR 커버리지, `develop` merge
 
 ---
 
@@ -316,4 +329,4 @@ python -m pytest \
 | 2026-05-28 | Report 02 · Prompting 02 · `spec` 브랜치 |
 | 2026-05-28 | Report 03 · Prompting 03 · `.cursorrules` · `User` entity |
 | 2026-05-28 | Report 04 · Prompting 04 · `.cursor/rules/*.mdc` · README 01~04 동기화 |
-| 2026-05-29 | `stabilize/red`·`stabilize/green` 브랜치 복구 · GREEN = RED 1묶음/1커밋 |
+| 2026-05-29 | Track A/B GREEN 완료 · Data/IT · PyQt6 GUI · README 동기화 |

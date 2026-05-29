@@ -3,9 +3,10 @@ name = "magicsquare"
 version = "0.1.0"
 description = "4x4 Magic Square TDD practice"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = ["pydantic>=2.0"]
 
 [project.optional-dependencies]
+gui = ["PyQt6>=6.6"]
 dev = ["pytest>=8.0", "pytest-cov>=5.0", "pydantic>=2.0", "ruff>=0.4", "black>=24.0"]
 
 [tool.pytest.ini_options]

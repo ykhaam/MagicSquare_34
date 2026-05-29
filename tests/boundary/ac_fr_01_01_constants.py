@@ -38,3 +38,18 @@ EXCLUDED_FR_IDS: frozenset[str] = frozenset(
         "FR-05",
     }
 )
+
+EXCLUDED_AC_MARKERS: tuple[str, ...] = (
+    "AC-FR-01-02",
+    "AC-FR-01-03",
+    "AC-FR-01-04",
+    "AC-FR-01-05",
+    "UI_INVALID_EMPTY_COUNT",
+    "UI_INVALID_VALUE_RANGE",
+    "UI_DUPLICATE_VALUE",
+    "DOMAIN_NO_SOLUTION",
+    "FR-02",
+    "FR-03",
+    "FR-04",
+    "FR-05",
+)

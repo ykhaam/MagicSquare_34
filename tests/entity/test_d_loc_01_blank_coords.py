@@ -1,10 +1,9 @@
-"""Entity logic RED skeleton — D-LOC-01 (find_blank_coords)."""
+"""Entity logic — D-LOC-01 (find_blank_coords)."""
 
 from __future__ import annotations
 
-import pytest
-
 from entity.services.blank_locator import find_blank_coords
+from tests.entity.conftest import G1
 
 
 class TestDLoc01BlankCoords:
@@ -13,9 +12,11 @@ class TestDLoc01BlankCoords:
     def test_d_loc_01_g1_row_major_blanks(self) -> None:
         """D-LOC-01 — G1 blanks at (2,2) and (3,3) 1-index."""
         # Given
-        # grid = G1
+        grid = G1
 
         # When
-        # first, second = find_blank_coords(grid)
+        first, second = find_blank_coords(grid)
 
-        pytest.fail("RED: D-LOC-01 — G1 row-major 빈칸 (2,2),(3,3) 1-index")
+        # Then
+        assert first == (2, 2)
+        assert second == (3, 3)
