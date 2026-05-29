@@ -176,7 +176,8 @@ MagicSquare_/
 | [09](./Report/09_Magic-Square-AC-FR-01-01-Boundary-GREEN-Session-Report.md) | [09](./Prompting/09_Magic-Square-AC-FR-01-01-Boundary-GREEN-Session-Transcript-Prompt.md) | AC-FR-01-01 GREEN |
 | [10](./Report/10_Magic-Square-Dual-Track-MVP-and-Screen-GUI-Session-Report.md) | — | MVP · PyQt6 GUI |
 | [11](./Report/11_Magic-Square-Golden-Master-Regression-Session-Report.md) | [11](./Prompting/11_Magic-Square-Golden-Master-Regression-Session-Transcript-Prompt.md) | Golden Master GM-1~3 |
-| **[12](./Report/12_Magic-Square-REFACTOR-Planning-Session-Report.md)** | **[12](./Prompting/12_Magic-Square-REFACTOR-Planning-Session-Transcript-Prompt.md)** | **REFACTOR 계획 · ECB · 3유형 체크리스트** |
+| **[12](./Report/12_Magic-Square-REFACTOR-Planning-Session-Report.md)** | **[12](./Prompting/12_Magic-Square-REFACTOR-Planning-Session-Transcript-Prompt.md)** | REFACTOR 계획 · 3유형 체크리스트 |
+| **[13](./Report/13_Magic-Square-REFACTOR-Implementation-Session-Report.md)** | **[13](./Prompting/13_Magic-Square-REFACTOR-Implementation-Session-Transcript-Prompt.md)** | **REFACTOR 구현 · 유형 1~3 · 3 commits** |
 
 ---
 
@@ -195,7 +196,7 @@ MagicSquare_/
 | **PyQt6 GUI** | `python -m boundary.screen` · `magicsquare-gui` | ✅ (optional `[gui]`) |
 | **Golden Master** | GM-TC-01~05 · `golden_master_expected.txt` | ✅ [Report 11](./Report/11_Magic-Square-Golden-Master-Regression-Session-Report.md) |
 | **REFACTOR 계획** | ECB gap · 테스트 선행 · P0/P1 슬라이스 | ✅ [Report 12](./Report/12_Magic-Square-REFACTOR-Planning-Session-Report.md) |
-| **REFACTOR 구현** | 유형 1~3 완료 (RF-1-1 ~ RF-3-5) | ✅ |
+| **REFACTOR 구현** | 유형 1~3 완료 (RF-1-1 ~ RF-3-5) | ✅ [Report 13](./Report/13_Magic-Square-REFACTOR-Implementation-Session-Report.md) |
 | **커버리지 80%+** | core `src` 96%+ · Entity+Boundary branch 97% | ✅ |
 | `develop` / `main` merge | MVP + REFACTOR 마일스톤 | ⏳ |
 
@@ -203,9 +204,9 @@ MagicSquare_/
 
 ## 다음 단계
 
-1. **REFACTOR 유형 3** — 중복·품질·커버리지 80%+ (RF-3-1 ~ RF-3-5)
-2. `refactor/refactor` → `develop` merge
-4. 계약 충돌 시 Report **02 우선** · AI 규칙은 **04 + `.mdc`**
+1. `refactor/refactor` → `develop` merge
+2. **File JSON `MatrixRepository`** (Report 02 옵션 B) — `IT-E03` / `DATA-T03`
+3. 계약 충돌 시 Report **02 우선** · AI 규칙은 **04 + `.mdc`**
 
 ### GUI 실행 (PyQt6)
 
