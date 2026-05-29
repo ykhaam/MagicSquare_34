@@ -17,6 +17,14 @@ class ErrorDetail(BaseModel):
     message: str
 
 
+class ErrorResponse(BaseModel):
+    """Flat error payload returned from Boundary solve on validation failure."""
+
+    code: str
+    message: str
+    field: str | None = None
+
+
 class FailureResponse(BaseModel):
     """Failure envelope returned when input validation rejects a grid."""
 
