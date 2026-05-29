@@ -86,22 +86,36 @@
 ## Git 브랜치 전략
 
 ```
-main          ← 마일스톤 스냅샷 (안정)
-develop       ← 통합 (merge 후 Green 목표)
-spec          ← 수용 조건·설계 문서
-  → red       ← 실패 테스트
-    → green   ← 최소 구현
-      → refactoring
+main                    ← 마일스톤 스냅샷 (안정)
+develop                 ← 통합 (merge 후 Green 목표)
+spec                    ← 수용 조건·설계 문서
+feature/dual-track-tdd  ← Dual-Track RED 설계·스켈레톤 (병합 완료 시 develop)
+  → red                 ← 실패 테스트만 (tests/)
+    → green             ← 최소 구현만 (src/)
+      → refactoring     ← 동작 유지 구조 개선
         → develop
 ```
 
-| 브랜치 | 용도 | 원격 |
-|--------|------|------|
-| `main` | 문서·동작 스냅샷 | `origin/main` |
-| `develop` | TDD 통합 | `origin/develop` |
-| `spec` | 설계·문서·규칙 | `origin/spec` |
+| 브랜치 | 용도 | 변경 허용 | 원격 |
+|--------|------|-----------|------|
+| `main` | 문서·동작 스냅샷 | 문서·릴리스 | `origin/main` |
+| `develop` | TDD 통합 | merge from `refactoring` | `origin/develop` |
+| `spec` | 설계·PRD·규칙 | `Report/`, `docs/`, `.cursor/` | `origin/spec` |
+| `feature/dual-track-tdd` | Dual-Track RED 묶음 (레거시) | — | `origin/feature/dual-track-tdd` |
+| **`red`** | **현재 RED 슬라이스** | **`tests/`만** | `origin/red` (push 후) |
+| **`green`** | **현재 GREEN 슬라이스** | **`src/`만** | `origin/green` (push 후) |
+| **`refactoring`** | **리팩터 슬라이스** | 구조·이름 (계약 동일) | `origin/refactoring` (push 후) |
 
-TDD 사이클: `spec → red → green → refactoring → develop` (동시 3분기 금지)
+> **참고:** 이전 작업 브랜치 `stabilize/green`은 **`green`으로 통일**합니다. AC-FR-01-01 Boundary GREEN은 `green`에서 이어갑니다.
+
+TDD 사이클: `spec → red → green → refactoring → develop` (**동시에 red/green/refactoring 3분기 금지**)
+
+```bash
+# 예: 다음 GREEN 슬라이스
+git checkout green
+python -m pytest <node id> -v   # RED 확인 → src/ 최소 수정 → PASS
+git checkout -b refactoring     # REFACTOR 시에만
+```
 
 ---
 
@@ -113,8 +127,13 @@ MagicSquare_/
 ├── .cursorrules              # 규칙 인덱스 · contract 요약
 ├── .cursor/rules/            # magicsquare-*.mdc (실행 규칙 SSOT)
 ├── pyproject.toml
-├── src/entity/               # User (MagicGrid 등 예정)
-├── tests/entity/
+├── src/
+│   ├── boundary/             # InputValidator, schemas (Track A)
+│   ├── control/              # (예정) PuzzleSolver 진입
+│   └── entity/               # User · services (Track B)
+├── tests/
+│   ├── boundary/             # UT-* · AC-FR-* (Mock 허용)
+│   └── entity/               # DT-* · D-* (Mock 금지)
 ├── Report/
 │   ├── 01_Magic-Square-Problem-Definition-Report.md
 │   ├── 02_Magic-Square-Dual-Track-TDD-Design.md
@@ -152,51 +171,136 @@ MagicSquare_/
 | Dual-Track 설계 | Report 02 · Prompting 02 | ✅ |
 | Cursor Rules `.mdc` | Report 04 · 5× `.mdc` | ✅ |
 | `.cursorrules` · `User` entity | Report 03 · Phase 03 kickoff | ✅ |
-| `red` | Domain/UI 실패 테스트 (`DT-*`) | ⏳ |
-| `green` | 최소 구현 | ⏳ |
-| `refactoring` | 구조 정리 | ⏳ |
+| **AC-FR-01-01** | `InputValidator` · `test_ac_fr_01_01_*` 9건 | ✅ GREEN (`green`) |
+| **`red`** | 실패 테스트 슬라이스 (`tests/` only) | 🔄 `red` 브랜치 |
+| **`green`** | 최소 구현 슬라이스 (`src/` only) | 🔄 **현재 작업 브랜치** |
+| **`refactoring`** | 구조 정리 (계약 동일) | ⏳ |
 | `develop` / `main` merge | MVP 마일스톤 | ⏳ |
+
+상세 GREEN 세션: [Report 09](./Report/09_Magic-Square-AC-FR-01-01-Boundary-GREEN-Session-Report.md)
 
 ---
 
 ## 다음 단계
 
-1. `red` 브랜치 생성 후 Report 02 §1.5.4 순서로 `DT-E01` RED  
-2. Cursor Rules: Settings에서 5개 `.mdc` 로드 확인  
-3. GREEN → REFACTOR → `develop` merge  
+1. **`green` 브랜치**에서 아래 GREEN 체크리스트 **다음 미체크 1건**만 처리 (1 test 또는 parametrize 1그룹)
+2. Track A·B **동시 GREEN 금지** — 한 트랙씩 `red` → `green` → `refactoring` → `develop`
+3. RED 묶음은 **같은 Test-ID·AC** 또는 **parametrize 1그룹** 단위로 `red` 브랜치에 커밋
 4. 계약 충돌 시 Report **02 우선** · AI 규칙은 **04 + `.mdc`**
 
 ---
 
-## RED 단계 To-Do 리스트
+## TDD GREEN To-Do (체크리스트)
 
-> 이 체크리스트는 test_plan.md 기반으로 생성되었습니다.
-> 각 항목은 RED(실패 테스트 작성) 완료 시 체크합니다.
+> **규칙:** RED = `tests/`만 · GREEN = **1 node id** + `src/` 최소 · REFACTOR = 동작 동일 · **Track A/B 동시 GREEN 금지**  
+> SSOT: [Report 02 §1.5.4](./Report/02_Magic-Square-Dual-Track-TDD-Design.md#154-red-작성-순서-권장) · [docs/test_plan.md](./docs/test_plan.md) · [docs/PRD_MagicSquare.md](./docs/PRD_MagicSquare.md)
 
-### Track A — UI / Boundary 테스트
-- [ ] TC-A-01: grid=None 입력 → 실패 결과 반환 (Happy Path of Failure)
-- [ ] TC-A-02: code가 정확히 "INVALID_SIZE" 문자열인지 검증
-- [ ] TC-A-03: message가 "Grid must be 4x4." 와 문자 단위 동일한지 검증
-- [ ] TC-A-04: grid=None 시 Domain 진입점 0회 호출 (mock/spy 검증)
-- [ ] TC-A-05: grid=[] 빈 리스트 → 실패 결과 반환
-- [ ] TC-A-06: grid=3×4 크기 불일치 → 실패 결과 반환
-- [ ] TC-A-07: 반환 객체 타입이 지정 실패 결과 구조체인지 검증
+### 매 GREEN 슬라이스 (공통)
 
-### Track B — Domain / Logic 테스트
-- [ ] TC-B-01: resolve()가 None grid를 직접 받지 않음을 격리 검증
-- [ ] TC-B-02: Boundary가 None 분기를 처리 후 resolve() 미호출 확인
-- [ ] TC-B-03: resolve() mock이 호출됐을 경우 테스트 실패 처리
-- [ ] TC-B-04: AC-FR-01-02~05 범위의 케이스는 이 커밋에 포함하지 않음 확인
+- [ ] `git checkout green` (또는 `red`에서 테스트만 커밋 후 `green`으로 전환)
+- [ ] `python -m pytest <node id> -v` → **FAIL** 확인 (이미 PASS면 `src/` 수정 금지)
+- [ ] `src/` 최소 수정 · `ValueError` throw 금지(Boundary는 `FailureResponse`/`ErrorResponse`)
+- [ ] 동일 node id **PASS** · (선택) `pytest tests/boundary/` 또는 `tests/entity/`
+- [ ] Conventional Commit 1건 → 필요 시 `refactoring` → `develop` merge
 
-### 커버리지 목표
-- [ ] Domain Logic: 95%+ (pip install pytest-cov)
-- [ ] Boundary Layer: 85%+
-- [ ] 전체 TOTAL: 90%+
+---
 
-### 결함 목록 연결
-- [x] defect_list.md 생성 및 발견 결함 기록
-- [ ] 모든 결함 수정 후 회귀 테스트 통과 확인
+### Track A — Boundary (Mock 허용) · 권장 순서
 
+#### 완료
+
+- [x] **AC-FR-01-01** — `tests/boundary/test_ac_fr_01_01_input_validation.py` (9건, `InputValidator`)
+
+#### UT-E01 — `tests/boundary/test_validate_size.py`
+
+**RED 묶음:** 8건 1커밋 (`MagicSquareBoundary` · `ErrorResponse`)
+
+- [ ] RED: Full RED 확정 · `boundary.magic_square_boundary` 수집 가능
+- [ ] **UT-E01-1** `::TestAcFr0101InvalidSize::test_none_grid_returns_invalid_size_failure`
+- [ ] **UT-E01-2** `::test_empty_list_returns_invalid_size_failure`
+- [ ] **UT-E01-3** `::test_ragged_four_rows_returns_invalid_size_failure`
+- [ ] **UT-E01-4** `::test_three_by_four_grid_returns_invalid_size_failure`
+- [ ] **UT-E01-5** `::test_none_grid_resolve_called_zero_times`
+- [ ] **UT-E01-6** `::test_none_grid_message_exact_prd_match`
+- [ ] **UT-E01-7** `::test_none_grid_failure_result_is_error_response_type`
+- [ ] **UT-E01-8** `::test_scope_excludes_ac_fr01_02_to_05_and_fr02_to_fr05`
+
+#### U-IN-04~08 — `tests/boundary/test_u_in_04_08_input_validation.py`
+
+**RED 묶음:** 스켈레톤 → 실패 assert (04+05 / 06 / 07 / 08)
+
+- [ ] **U-IN-04** `::TestUIn04Through08InputValidation::test_u_in_04_minus_one_returns_e004`
+- [ ] **U-IN-05** `::test_u_in_05_seventeen_returns_e004`
+- [ ] **U-IN-06** `::test_u_in_06_duplicate_nonzero_returns_e005`
+- [ ] **U-IN-07** `::test_u_in_07_out_of_range_ninety_nine_returns_e004`
+- [ ] **U-IN-08** `::test_u_in_08_non_list_grid_returns_e001`
+
+#### U-FLOW-02 — `tests/boundary/test_u_flow_02_invalid_skips_execute.py`
+
+**RED 묶음:** 6건 · Mock `execute` 0회
+
+- [ ] **U-FLOW-02a** `::test_u_flow_02_null_matrix_skips_execute`
+- [ ] **U-FLOW-02b** `::test_u_flow_02_invalid_size_skips_execute`
+- [ ] **U-FLOW-02c** `::test_u_flow_02_invalid_empty_count_skips_execute`
+- [ ] **U-FLOW-02d** `::test_u_flow_02_invalid_range_skips_execute`
+- [ ] **U-FLOW-02e** `::test_u_flow_02_duplicate_skips_execute`
+- [ ] **U-FLOW-02f** `::test_u_flow_02_ragged_grid_skips_execute`
+
+#### U-OUT-01~03 — `tests/boundary/test_u_out_01_03_output_contract.py`
+
+**RED 묶음:** 3건 · Control Mock `execute` + G1 (FR-05 선행 확인)
+
+- [ ] **U-OUT-01** `::test_u_out_01_success_payload_length_six`
+- [ ] **U-OUT-02** `::test_u_out_02_success_coordinates_one_indexed`
+- [ ] **U-OUT-03** `::test_u_out_03_success_fill_values_in_range`
+
+| Track A 요약 | 완료 | GREEN 대기 |
+|--------------|------|------------|
+| AC-FR-01-01 | 9 | — |
+| UT-E01 + U-IN + U-FLOW + U-OUT | — | **22** |
+
+---
+
+### Track B — Entity/Control (Mock 금지) · Report 02 §1.5.4 순서
+
+#### DT-E01~E06 (미작성)
+
+- [ ] RED: `tests/entity/test_magic_grid.py` (또는 동등) — 구조 거부 DT-E01~E06
+- [ ] GREEN: E01 → E02 → … → E06 (각 1커밋)
+
+#### D-VAL-01~06 — `tests/entity/test_d_val_01_06_magic_validation.py`
+
+**RED 묶음:** 6건
+
+- [ ] **D-VAL-01** `::TestDVal01Through06MagicValidation::test_d_val_01_g0_complete_magic_true`
+- [ ] **D-VAL-02** `::test_d_val_02_row_sum_mismatch`
+- [ ] **D-VAL-03** `::test_d_val_03_col_sum_mismatch`
+- [ ] **D-VAL-04** `::test_d_val_04_diagonal_mismatch`
+- [ ] **D-VAL-05** `::test_d_val_05_duplicate_false`
+- [ ] **D-VAL-06** `::test_d_val_06_zero_in_filled_false`
+
+#### D-LOC-01 · D-MIS-01 · D-SOL-01~04
+
+- [ ] **D-LOC-01** `tests/entity/test_d_loc_01_blank_coords.py::...::test_d_loc_01_g1_row_major_blanks`
+- [ ] **D-MIS-01** `tests/entity/test_d_mis_01_missing_numbers.py::...::test_d_mis_01_g1_missing_sorted`
+- [ ] **D-SOL-01** `tests/entity/test_d_sol_01_04_solution.py::...::test_d_sol_01_g1_step_a_success`
+- [ ] **D-SOL-02** `::test_d_sol_02_g2_step_b_reverse`
+- [ ] **D-SOL-03** `::test_d_sol_03_g3_unsolvable`
+- [ ] **D-SOL-04** `::test_d_sol_04_output_contract`
+
+| Track B 요약 | 완료 | GREEN 대기 |
+|--------------|------|------------|
+| DT-E + D-VAL + D-LOC + D-MIS + D-SOL | — | **12+** |
+
+> **제외:** `tests/entity/test_user.py` — 학습용 `User` (마방진 백로그 밖)
+
+---
+
+### 커버리지 목표 (REFACTOR / develop merge 시)
+
+- [ ] Entity Logic: 95%+ branch
+- [ ] Boundary: 85%+ branch
+- [ ] 전체: 80%+ (Report 02 §4.4)
 ---
 
 ## 범위
@@ -214,3 +318,4 @@ MagicSquare_/
 | 2026-05-28 | Report 02 · Prompting 02 · `spec` 브랜치 |
 | 2026-05-28 | Report 03 · Prompting 03 · `.cursorrules` · `User` entity |
 | 2026-05-28 | Report 04 · Prompting 04 · `.cursor/rules/*.mdc` · README 01~04 동기화 |
+| 2026-05-29 | TDD 브랜치 `red`/`green`/`refactoring` · GREEN To-Do 체크리스트 · AC-FR-01-01 반영 |
