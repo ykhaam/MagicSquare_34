@@ -90,40 +90,38 @@ main                    ← 마일스톤 스냅샷 (안정)
 develop                 ← 통합 (merge 후 Green 목표)
 spec                    ← 수용 조건·설계 문서
 feature/dual-track-tdd  ← Dual-Track RED 설계·스켈레톤 (병합 완료 시 develop)
-  → red                 ← 실패 테스트만 (tests/)
-    → green             ← 최소 구현만 (src/)
-      → refactoring     ← 동작 유지 구조 개선
+  → stabilize/red       ← 실패 테스트만 (tests/)
+    → stabilize/green   ← 최소 구현만 (src/)
+      → stabilize/refactoring
         → develop
 ```
 
 | 브랜치 | 용도 | 변경 허용 | 원격 |
 |--------|------|-----------|------|
 | `main` | 문서·동작 스냅샷 | 문서·릴리스 | `origin/main` |
-| `develop` | TDD 통합 | merge from `refactoring` | `origin/develop` |
+| `develop` | TDD 통합 | merge from `stabilize/refactoring` | `origin/develop` |
 | `spec` | 설계·PRD·규칙 | `Report/`, `docs/`, `.cursor/` | `origin/spec` |
 | `feature/dual-track-tdd` | Dual-Track RED 묶음 (레거시) | — | `origin/feature/dual-track-tdd` |
-| **`red`** | **현재 RED 슬라이스** | **`tests/`만** | `origin/red` (push 후) |
-| **`green`** | **현재 GREEN 슬라이스** | **`src/`만** | `origin/green` (push 후) |
-| **`refactoring`** | **리팩터 슬라이스** | 구조·이름 (계약 동일) | `origin/refactoring` (push 후) |
+| **`stabilize/red`** | **현재 RED 슬라이스** | **`tests/`만** | `origin/stabilize/red` (push 후) |
+| **`stabilize/green`** | **현재 GREEN 슬라이스** | **`src/`만** | `origin/stabilize/green` (push 후) |
+| **`stabilize/refactoring`** | **리팩터 슬라이스** | 구조·이름 (계약 동일) | `origin/stabilize/refactoring` (push 후) |
 
-> **참고:** 이전 작업 브랜치 `stabilize/green`은 **`green`으로 통일**합니다. AC-FR-01-01 Boundary GREEN은 `green`에서 이어갑니다.
-
-TDD 사이클: `spec → red → green → refactoring → develop` (**동시에 red/green/refactoring 3분기 금지**)
+TDD 사이클: `spec → stabilize/red → stabilize/green → stabilize/refactoring → develop` (**동시 3분기 금지**)
 
 | 단계 | 커밋 단위 | 브랜치 | 이번 작업 |
 |------|-----------|--------|-----------|
-| **RED** | 테스트 **3건** = 1 커밋 | `red` | `tests/`만 |
-| **GREEN** | **RED 1묶음** = 1 커밋 | `green` | `src/`만 · 해당 묶음 전건 PASS |
-| **REFACTOR** | 슬라이스별 | `refactoring` | **이번 커밋 범위 밖** |
+| **RED** | 테스트 **3건** = 1 커밋 | `stabilize/red` | `tests/`만 |
+| **GREEN** | **RED 1묶음** = 1 커밋 | `stabilize/green` | `src/`만 · 해당 묶음 전건 PASS |
+| **REFACTOR** | 슬라이스별 | `stabilize/refactoring` | **이번 커밋 범위 밖** |
 
 ```bash
 # 1) RED 묶음 (예: RED-A1 = 3 test)
-git checkout red
+git checkout stabilize/red
 python -m pytest <node1> <node2> <node3> -v   # 전부 FAIL
 git add tests/ && git commit -m "test(boundary): RED-A1 UT-E01 invalid size (3)"
 
 # 2) GREEN — RED 1묶음당 src/ 1커밋 (REFACTOR 금지)
-git checkout green
+git checkout stabilize/green
 python -m pytest <node1> <node2> <node3> -v   # 전부 FAIL → src/ 최소 수정 → PASS
 git add src/ && git commit -m "feat(boundary): GREEN-A1 UT-E01 invalid size (3)"
 ```
@@ -182,10 +180,10 @@ MagicSquare_/
 | Dual-Track 설계 | Report 02 · Prompting 02 | ✅ |
 | Cursor Rules `.mdc` | Report 04 · 5× `.mdc` | ✅ |
 | `.cursorrules` · `User` entity | Report 03 · Phase 03 kickoff | ✅ |
-| **AC-FR-01-01** | `InputValidator` · `test_ac_fr_01_01_*` 9건 | ✅ GREEN (`green`) |
-| **`red`** | 실패 테스트 **3건/커밋** (`tests/` only) | 🔄 `red` 브랜치 · **다음: RED-A1** |
-| **`green`** | **RED 1묶음** 최소 구현 (`src/` only) | 🔄 **현재 작업 브랜치** |
-| **`refactoring`** | 구조 정리 (계약 동일) | ⏳ **이번 범위 밖** |
+| **AC-FR-01-01** | `InputValidator` · `test_ac_fr_01_01_*` 9건 | ✅ GREEN (`stabilize/green`) |
+| **`stabilize/red`** | 실패 테스트 **3건/커밋** (`tests/` only) | 🔄 **다음: RED-A1** |
+| **`stabilize/green`** | **RED 1묶음** 최소 구현 (`src/` only) | 🔄 **현재 작업 브랜치** |
+| **`stabilize/refactoring`** | 구조 정리 (계약 동일) | ⏳ **이번 범위 밖** |
 | `develop` / `main` merge | MVP 마일스톤 | ⏳ |
 
 상세 GREEN 세션: [Report 09](./Report/09_Magic-Square-AC-FR-01-01-Boundary-GREEN-Session-Report.md)
@@ -194,7 +192,7 @@ MagicSquare_/
 
 ## 다음 단계
 
-1. **`red`:** 다음 **RED 묶음(3건)** 커밋 → **`green`:** 같은 ID **GREEN 1커밋**으로 해당 묶음 전건 PASS (**REFACTOR 금지**)
+1. **`stabilize/red`:** 다음 **RED 묶음(3건)** 커밋 → **`stabilize/green`:** 같은 ID **GREEN 1커밋**으로 해당 묶음 전건 PASS (**REFACTOR 금지**)
 2. Track A·B **동시 RED/GREEN 금지**
 3. RED 잔여 2건 묶음은 **마지막 슬라이스 예외** (총 건수 % 3 ≠ 0일 때만)
 4. 계약 충돌 시 Report **02 우선** · AI 규칙은 **04 + `.mdc`**
@@ -203,17 +201,17 @@ MagicSquare_/
 
 ## TDD RED / GREEN To-Do (체크리스트)
 
-> **RED:** `red` · **`tests/`만** · **3 test = 1 커밋**  
-> **GREEN:** `green` · **`src/`만** · **RED 1묶음 = 1 커밋** (묶음 내 node id **전부 PASS**)  
-> **REFACTOR:** `refactoring` · **이번 커밋/슬라이스에서 하지 않음**  
+> **RED:** `stabilize/red` · **`tests/`만** · **3 test = 1 커밋**  
+> **GREEN:** `stabilize/green` · **`src/`만** · **RED 1묶음 = 1 커밋** (묶음 내 node id **전부 PASS**)  
+> **REFACTOR:** `stabilize/refactoring` · **이번 커밋/슬라이스에서 하지 않음**  
 > **Track A/B 동시 RED·GREEN 금지**  
 > SSOT: [Report 02 §1.5.4](./Report/02_Magic-Square-Dual-Track-TDD-Design.md#154-red-작성-순서-권장) · [docs/test_plan.md](./docs/test_plan.md)
 
 ### 매 슬라이스 (1 RED 묶음 → 1 GREEN 커밋)
 
-| # | RED (`red`) | GREEN (`green`) |
-|---|-------------|-----------------|
-| 1 | 묶음 내 3건 `pytest` → **전부 FAIL** · `tests/` 커밋 1건 | `git checkout green` |
+| # | RED (`stabilize/red`) | GREEN (`stabilize/green`) |
+|---|----------------------|---------------------------|
+| 1 | 묶음 내 3건 `pytest` → **전부 FAIL** · `tests/` 커밋 1건 | `git checkout stabilize/green` |
 | 2 | — | 동일 3건 `pytest` → **전부 FAIL** 확인 (이미 PASS면 `src/` 수정 금지) |
 | 3 | — | `src/` 최소 수정 · Boundary는 `FailureResponse`/`ErrorResponse` (throw 금지) |
 | 4 | — | 동일 3건 **전부 PASS** · `src/` 커밋 1건 · **REFACTOR·설계 개선 금지** |
@@ -224,7 +222,7 @@ MagicSquare_/
 
 **RED / GREEN 동일 ID** — 한 행 = RED 1커밋 + GREEN 1커밋
 
-| ID | RED (`red` · 3건) | GREEN (`green` · 묶음 전건 PASS) | 상태 |
+| ID | RED (`stabilize/red` · 3건) | GREEN (`stabilize/green` · 묶음 전건 PASS) | 상태 |
 |----|-------------------|----------------------------------|------|
 | **A0-1** | `test_none_grid_returns_failure_with_invalid_size_code` · `[empty_list]` · `[four_empty_rows]` | `test_ac_fr_01_01_input_validation.py` 위 3 node | ✅ |
 | **A0-2** | `[size_3x4]` · `test_none_grid_message_matches_prd_section_8_1_exactly` · `test_none_grid_returns_exact_invalid_size_code_string` | 동일 파일 위 3 node | ✅ |
@@ -273,7 +271,7 @@ python -m pytest \
 
 **RED / GREEN 동일 ID** — 한 행 = RED 1커밋 + GREEN 1커밋
 
-| ID | RED (`red`) | GREEN (`green` · 묶음 전건 PASS) | 상태 |
+| ID | RED (`stabilize/red`) | GREEN (`stabilize/green` · 묶음 전건 PASS) | 상태 |
 |----|-------------|----------------------------------|------|
 | **B1** | DT-E01 · E02 · E03 (`test_magic_grid.py` **미작성**) | **GREEN-B1** | ⏳ |
 | **B2** | DT-E04 · E05 · E06 | **GREEN-B2** | ⏳ |
@@ -319,4 +317,4 @@ python -m pytest \
 | 2026-05-28 | Report 02 · Prompting 02 · `spec` 브랜치 |
 | 2026-05-28 | Report 03 · Prompting 03 · `.cursorrules` · `User` entity |
 | 2026-05-28 | Report 04 · Prompting 04 · `.cursor/rules/*.mdc` · README 01~04 동기화 |
-| 2026-05-29 | GREEN = RED 1묶음/1커밋 · REFACTOR 범위 밖 명시 |
+| 2026-05-29 | `stabilize/red`·`stabilize/green` 브랜치 복구 · GREEN = RED 1묶음/1커밋 |
