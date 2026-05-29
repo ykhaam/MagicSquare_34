@@ -219,6 +219,37 @@ python -m venv .venv
 > **Track A/B 동시 RED·GREEN 금지**  
 > SSOT: [Report 02 §1.5.4](./Report/02_Magic-Square-Dual-Track-TDD-Design.md#154-red-작성-순서-권장) · [docs/test_plan.md](./docs/test_plan.md)
 
+### Golden Master 회귀 안전장치
+
+> **Refactoring 시작 전 구축** · **GREEN 완료 후 즉시 적용**  
+> 설계: [docs/golden_master_approve_design.md](./docs/golden_master_approve_design.md)
+
+**기준 파일 생성**
+
+- [x] **GM-01:** `tests/golden_master_expected.txt` 생성 (`scripts/generate_golden_master.py`)
+- [x] **GM-02:** 정상 / 역순 / 오류 시나리오 추가 (GM-TC-01~05)
+- [x] **GM-03:** `git add tests/golden_master_expected.txt` (버전 관리)
+
+**테스트 코드**
+
+- [x] **GM-04:** `tests/test_golden_master_magic_square.py` 작성
+- [x] **GM-05:** approve 패턴 적용 (`tests/golden_master/approve.py`)
+- [x] **GM-06:** Golden Master 테스트 PASS 확인 (`pytest -m golden_master -v`)
+
+**회귀 보호**
+
+- [x] **GM-07:** row-major 규칙 보호 (`assert_row_major_blank_order`)
+- [x] **GM-08:** 1-index 출력 보호 (`assert_one_index_coordinates`)
+- [x] **GM-09:** reverse 조합 fallback 보호 (`assert_reverse_fallback_combination`)
+- [x] **GM-10:** Error Contract 보호 (`assert_error_contract`)
+
+```bash
+python scripts/generate_golden_master.py
+python -m pytest -m golden_master -v
+```
+
+---
+
 ### 매 슬라이스 (1 RED 묶음 → 1 GREEN 커밋)
 
 | # | RED (`stabilize/red`) | GREEN (`stabilize/green`) |
@@ -312,7 +343,7 @@ python -m pytest \
 - [ ] Boundary: 85%+ branch (`pytest --cov=src/boundary`)
 - [ ] 전체: 80%+ (Report 02 §4.4)
 
-현재: `python -m pytest tests/ -q` → **67 passed**
+현재: `python -m pytest tests/ -q` → **73 passed**
 ---
 
 ## 범위
@@ -331,3 +362,5 @@ python -m pytest \
 | 2026-05-28 | Report 03 · Prompting 03 · `.cursorrules` · `User` entity |
 | 2026-05-28 | Report 04 · Prompting 04 · `.cursor/rules/*.mdc` · README 01~04 동기화 |
 | 2026-05-29 | Track A/B GREEN 완료 · Data/IT · PyQt6 GUI · [Report 10](./Report/10_Magic-Square-Dual-Track-MVP-and-Screen-GUI-Session-Report.md) |
+| 2026-05-29 | GM-1~2 Golden Master baseline · approve 패턴 · README GM-03 체크리스트 |
+| 2026-05-29 | [Report 11](./Report/11_Magic-Square-Golden-Master-Regression-Session-Report.md) · [Prompting 11](./Prompting/11_Magic-Square-Golden-Master-Regression-Session-Transcript-Prompt.md) |

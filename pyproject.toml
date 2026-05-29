@@ -15,6 +15,9 @@ magicsquare-gui = "boundary.screen.app:main"
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+markers = [
+    "golden_master: GM-2 Golden Master regression (approve pattern)",
+]
 
 [tool.black]
 line-length = 88
