@@ -6,14 +6,17 @@ import sys
 
 from PyQt6.QtWidgets import QApplication
 
-from boundary.screen.window import MagicSquareWindow
+from boundary.screen.main_window import MagicSquareWindow
+from boundary.ui_boundary import UIBoundary
+from control.solve_partial_magic_square import solution
 
 
 def main() -> int:
     """Launch the MagicSquare PyQt6 application."""
     app = QApplication(sys.argv)
     app.setApplicationName("MagicSquare")
-    window = MagicSquareWindow()
+    boundary = UIBoundary(execute=solution)
+    window = MagicSquareWindow(boundary=boundary)
     window.show()
     return app.exec()
 

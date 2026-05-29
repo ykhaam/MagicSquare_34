@@ -15,7 +15,10 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from boundary.magic_square_boundary import MagicSquareBoundary
+from boundary.error_codes import (
+    UI_INTERNAL_CONTRACT_CODE,
+    UI_INTERNAL_CONTRACT_MESSAGE,
+)
 from boundary.schemas import ErrorResponse
 from boundary.screen.constants import (
     GRID_DIMENSION,
@@ -31,17 +34,21 @@ from boundary.screen.constants import (
     STYLE_SUCCESS,
     WINDOW_TITLE,
 )
-from control.puzzle_solver import solution
+from boundary.ui_boundary import UIBoundary
 from entity.constants import EMPTY_CELL_VALUE, MAX_CELL_VALUE, MIN_CELL_VALUE
 
 
 class MagicSquareWindow(QMainWindow):
-    """Main window with a 4×4 grid editor and Boundary-backed solve action."""
+    """Main window with a 4×4 grid editor and injected UIBoundary solve handler."""
 
-    def __init__(self) -> None:
-        """Build widgets and wire Boundary solve handler."""
+    def __init__(self, boundary: UIBoundary) -> None:
+        """Build widgets and wire the injected Boundary.
+
+        Args:
+            boundary: UIBoundary instance (wired in ``app`` with Control execute).
+        """
         super().__init__()
-        self._boundary = MagicSquareBoundary(resolve=solution)
+        self._boundary = boundary
         self._cells: list[list[QSpinBox]] = []
         self._status_label = QLabel(STATUS_READY)
         self._result_label = QLabel("")
@@ -57,12 +64,26 @@ class MagicSquareWindow(QMainWindow):
         root = QVBoxLayout(central)
         root.setSpacing(12)
 
+        root.addWidget(self._create_intro_label())
+        root.addWidget(self._build_grid_group())
+        root.addLayout(self._build_button_row())
+        root.addWidget(self._build_result_group())
+        root.addStretch()
+        self.setCentralWidget(central)
+        self._apply_app_stylesheet()
+
+    @staticmethod
+    def _create_intro_label() -> QLabel:
+        """Build the puzzle instructions label."""
         intro = QLabel(
             "Fill the magic square puzzle. Values 1-16 once each; "
             "use 0 for empty cells (exactly two)."
         )
         intro.setWordWrap(True)
+        return intro
 
+    def _build_grid_group(self) -> QGroupBox:
+        """Build the 4×4 spin-box grid and populate ``self._cells``."""
         grid_group = QGroupBox("4x4 Grid")
         grid_layout = QGridLayout(grid_group)
         grid_layout.setHorizontalSpacing(6)
@@ -83,18 +104,26 @@ class MagicSquareWindow(QMainWindow):
             row_label.setStyleSheet("font-weight: 600; color: #566573;")
             grid_layout.addWidget(row_label, row + 1, 0)
 
-            row_cells: list[QSpinBox] = []
-            for col in range(GRID_DIMENSION):
-                spin = QSpinBox()
-                spin.setRange(EMPTY_CELL_VALUE, MAX_CELL_VALUE)
-                spin.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                spin.setSpecialValueText("·")
-                spin.setMinimumWidth(52)
-                spin.setMinimumHeight(36)
+            row_cells = [self._create_cell_spin_box() for _ in range(GRID_DIMENSION)]
+            for col, spin in enumerate(row_cells):
                 grid_layout.addWidget(spin, row + 1, col + 1)
-                row_cells.append(spin)
             self._cells.append(row_cells)
 
+        return grid_group
+
+    @staticmethod
+    def _create_cell_spin_box() -> QSpinBox:
+        """Create one grid cell editor."""
+        spin = QSpinBox()
+        spin.setRange(EMPTY_CELL_VALUE, MAX_CELL_VALUE)
+        spin.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        spin.setSpecialValueText("·")
+        spin.setMinimumWidth(52)
+        spin.setMinimumHeight(36)
+        return spin
+
+    def _build_button_row(self) -> QHBoxLayout:
+        """Build Solve / Sample / Clear controls."""
         button_row = QHBoxLayout()
         solve_button = QPushButton("Solve")
         solve_button.setMinimumHeight(34)
@@ -112,19 +141,15 @@ class MagicSquareWindow(QMainWindow):
         button_row.addWidget(sample_button)
         button_row.addWidget(clear_button)
         button_row.addStretch()
+        return button_row
 
+    def _build_result_group(self) -> QGroupBox:
+        """Build the status and result panel."""
         result_group = QGroupBox("Result")
         result_layout = QVBoxLayout(result_group)
         result_layout.addWidget(self._status_label)
         result_layout.addWidget(self._result_label)
-
-        root.addWidget(intro)
-        root.addWidget(grid_group)
-        root.addLayout(button_row)
-        root.addWidget(result_group)
-        root.addStretch()
-        self.setCentralWidget(central)
-        self._apply_app_stylesheet()
+        return result_group
 
     def _apply_app_stylesheet(self) -> None:
         """Apply a light, readable application theme."""
@@ -246,4 +271,7 @@ class MagicSquareWindow(QMainWindow):
             self._show_success(result)
             return
 
-        self._show_error("UI_INTERNAL", "Unexpected Boundary response type.")
+        self._show_error(
+            UI_INTERNAL_CONTRACT_CODE,
+            UI_INTERNAL_CONTRACT_MESSAGE,
+        )

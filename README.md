@@ -138,7 +138,7 @@ MagicSquare_/
 ├── pyproject.toml
 ├── src/
 │   ├── boundary/             # InputValidator, UIBoundary, screen (Track A)
-│   ├── control/              # puzzle_solver.solution
+│   ├── control/              # solve_partial_magic_square.solution
 │   ├── data/                 # InMemoryMatrixRepository
 │   └── entity/               # MagicGrid, services (Track B)
 ├── tests/
@@ -176,7 +176,8 @@ MagicSquare_/
 | [09](./Report/09_Magic-Square-AC-FR-01-01-Boundary-GREEN-Session-Report.md) | [09](./Prompting/09_Magic-Square-AC-FR-01-01-Boundary-GREEN-Session-Transcript-Prompt.md) | AC-FR-01-01 GREEN |
 | [10](./Report/10_Magic-Square-Dual-Track-MVP-and-Screen-GUI-Session-Report.md) | — | MVP · PyQt6 GUI |
 | [11](./Report/11_Magic-Square-Golden-Master-Regression-Session-Report.md) | [11](./Prompting/11_Magic-Square-Golden-Master-Regression-Session-Transcript-Prompt.md) | Golden Master GM-1~3 |
-| **[12](./Report/12_Magic-Square-REFACTOR-Planning-Session-Report.md)** | **[12](./Prompting/12_Magic-Square-REFACTOR-Planning-Session-Transcript-Prompt.md)** | **REFACTOR 계획 · ECB · P0/P1** |
+| **[12](./Report/12_Magic-Square-REFACTOR-Planning-Session-Report.md)** | **[12](./Prompting/12_Magic-Square-REFACTOR-Planning-Session-Transcript-Prompt.md)** | REFACTOR 계획 · 3유형 체크리스트 |
+| **[13](./Report/13_Magic-Square-REFACTOR-Implementation-Session-Report.md)** | **[13](./Prompting/13_Magic-Square-REFACTOR-Implementation-Session-Transcript-Prompt.md)** | **REFACTOR 구현 · 유형 1~3 · 3 commits** |
 
 ---
 
@@ -195,18 +196,17 @@ MagicSquare_/
 | **PyQt6 GUI** | `python -m boundary.screen` · `magicsquare-gui` | ✅ (optional `[gui]`) |
 | **Golden Master** | GM-TC-01~05 · `golden_master_expected.txt` | ✅ [Report 11](./Report/11_Magic-Square-Golden-Master-Regression-Session-Report.md) |
 | **REFACTOR 계획** | ECB gap · 테스트 선행 · P0/P1 슬라이스 | ✅ [Report 12](./Report/12_Magic-Square-REFACTOR-Planning-Session-Report.md) |
-| **REFACTOR 구현** | `two_cell_solver` · UT-F01/F02 · Screen UIBoundary | ⏳ `refactor/refactor` |
-| **커버리지 80%+** | Entity 95% / Boundary 85% / 전체 80% | ⏳ (현재 ~67%) |
+| **REFACTOR 구현** | 유형 1~3 완료 (RF-1-1 ~ RF-3-5) | ✅ [Report 13](./Report/13_Magic-Square-REFACTOR-Implementation-Session-Report.md) |
+| **커버리지 80%+** | core `src` 96%+ · Entity+Boundary branch 97% | ✅ |
 | `develop` / `main` merge | MVP + REFACTOR 마일스톤 | ⏳ |
 
 ---
 
 ## 다음 단계
 
-1. **REFACTOR P0** ([Report 12 §9](./Report/12_Magic-Square-REFACTOR-Planning-Session-Report.md#9-권장-슬라이스-순서-p0--p1)): UT-F01/F02 → UT-E07 → DEF-003 → `two_cell_solver` 추출 → Screen `UIBoundary`
-2. **커버리지 80%+** 측정 후 `refactor/refactor` → `develop` merge
-3. **File JSON `MatrixRepository`** (Report 02 옵션 B) — `IT-E03` / `DATA-T03`
-4. 계약 충돌 시 Report **02 우선** · AI 규칙은 **04 + `.mdc`**
+1. `refactor/refactor` → `develop` merge
+2. **File JSON `MatrixRepository`** (Report 02 옵션 B) — `IT-E03` / `DATA-T03`
+3. 계약 충돌 시 Report **02 우선** · AI 규칙은 **04 + `.mdc`**
 
 ### GUI 실행 (PyQt6)
 
@@ -345,39 +345,48 @@ python -m pytest \
 
 ---
 
-### 커버리지 목표 (REFACTOR / develop merge 시)
+### REFACTOR To-Do (Report 12 · 3유형 체크리스트)
 
-- [ ] Entity Logic: 95%+ branch (`pytest --cov=src/entity`)
-- [ ] Boundary: 85%+ branch (`pytest --cov=src/boundary`)
-- [ ] 전체: 80%+ (Report 02 §4.4)
+> 상세: [Report 12 §8](./Report/12_Magic-Square-REFACTOR-Planning-Session-Report.md#8-리팩토링-대상-목록-우선순위) · 권장 순서: **유형 1 → 2 → 3**  
+> 현재: `python -m pytest tests/ -q` → **83 passed**, 2 skipped (UT-GUI·PyQt6) · Screen **0%** · 전역 **~67%**
 
-현재: `python -m pytest tests/ -q` → **73 passed** · Screen 커버리지 **0%**
+#### 유형 1 — 계약·오류 SSOT (Boundary Contract)
 
----
+Boundary 응답 형식·에러 코드·메시지를 Report 02 / PRD와 맞춥니다. **테스트 RED → GREEN 선행.**
 
-### REFACTOR To-Do (Report 12 · P0 우선)
+- [x] **RF-1-1** `magic_square_boundary.py` — UT-F01/F02 RED→GREEN · `int[6]`·1-index guard
+- [x] **RF-1-2** `magic_square_boundary.py` — UT-E07 RED→GREEN · `DomainInvalidGridError` → E006/E007
+- [x] **RF-1-3** `error_codes.py` — DEF-003 · `INVALID_SIZE` vs `UI_INVALID_SIZE` SSOT 정렬
+- [x] **RF-1-4** `window.py` + `error_codes.py` — `UI_INTERNAL` 하드코딩 → Extract Constant
 
-> 상세: [Report 12 §8](./Report/12_Magic-Square-REFACTOR-Planning-Session-Report.md#8-리팩토링-대상-목록-우선순위)
+#### 유형 2 — ECB·역할 분리 (Layer / SRP)
 
-**P0 — 테스트 선행 후 `src/` 변경**
+`boundary → control → entity` 방향을 지키고 Control·Screen·Entity 책임을 나눕니다.
 
-- [ ] **RF-P0-1** UT-F01/F02 RED→GREEN — Boundary `int[6]`·1-index guard
-- [ ] **RF-P0-2** UT-E07 RED→GREEN — `DomainInvalidGridError` → `ErrorResponse`
-- [ ] **RF-P0-3** DEF-003 · `UI_INTERNAL_CONTRACT` — `error_codes.py` SSOT
-- [ ] **RF-P0-4** `entity/services/two_cell_solver.py` 추출 — Control thin orchestration
-- [ ] **RF-P0-5** Screen → `UIBoundary(execute=…)` · UT-GUI RED→GREEN
+- [x] **RF-2-1** `entity/services/two_cell_solver.py` 추출 — `puzzle_solver.py` Step A/B·배치·int[6] 조립 분리
+- [x] **RF-2-2** `solve_partial_magic_square.py` — `MagicGrid.from_raw` 중복 제거 · Control thin orchestration
+- [x] **RF-2-3** `main_window.py` — Screen → `UIBoundary(execute=…)` · UT-GUI RED→GREEN (Control 직접 import 제거)
+- [x] **RF-2-4** `ui_boundary.py` / `magic_square_boundary.py` — re-export vs 실체 SSOT 일원화
+- [x] **RF-2-5** rename — `puzzle_solver` → `solve_partial_magic_square` (P1)
+- [x] **RF-2-6** rename — `window` → `main_window` (P2)
 
-**P1 — P0 Green 유지**
+> 현재: `python -m pytest tests/ -q` → **99 passed**, 2 skipped · `--cov=src` **96%+** (Screen·re-export omit) · Entity+Boundary branch **97%**
 
-- [ ] **RF-P1-1** `input_validator` ↔ `grid_validator` SSOT
-- [ ] **RF-P1-2** `ui_boundary` / `magic_square_boundary` 일원화
-- [ ] **RF-P1-3** rename: `puzzle_solver` → `solve_partial_magic_square`, `window` → `main_window`
-- [ ] **RF-P1-4** 커버리지 Entity 95% / Boundary 85% / 전체 80%
+#### 유형 3 — 중복·품질 정리 (DRY / Cleanup / Coverage)
+
+동일 로직·매직 넘버·문서 drift를 정리하고 develop merge 커버리지 목표를 맞춥니다.
+
+- [x] **RF-3-1** `input_validator.py` ↔ `grid_validator.py` — D-STRUCT 검증 Shared Kernel (`structure_failure_kind`)
+- [x] **RF-3-2** `main_window.py` — `_init_ui` Extract Method · `_create_cell_spin_box` 등
+- [x] **RF-3-3** `magic_grid.py` — literal `4` → `GRID_SIZE` SSOT
+- [x] **RF-3-4** `test_d_sol_01` — docstring Step B 기대값과 정렬
+- [x] **RF-3-5** 커버리지 — core `src` 96%+ · Entity+Boundary branch 97% (`pyproject.toml` omit: Screen·re-export)
 
 ```bash
 # REFACTOR 회귀 (매 슬라이스 후)
 python -m pytest tests/ -q
 python -m pytest -m golden_master -v
+python -m pytest tests/ --cov=src --cov-report=term-missing
 ```
 
 ---
@@ -400,4 +409,4 @@ python -m pytest -m golden_master -v
 | 2026-05-29 | Track A/B GREEN 완료 · Data/IT · PyQt6 GUI · [Report 10](./Report/10_Magic-Square-Dual-Track-MVP-and-Screen-GUI-Session-Report.md) |
 | 2026-05-29 | GM-1~2 Golden Master baseline · approve 패턴 · README GM-03 체크리스트 |
 | 2026-05-29 | [Report 11](./Report/11_Magic-Square-Golden-Master-Regression-Session-Report.md) · [Prompting 11](./Prompting/11_Magic-Square-Golden-Master-Regression-Session-Transcript-Prompt.md) |
-| 2026-05-29 | [Report 12](./Report/12_Magic-Square-REFACTOR-Planning-Session-Report.md) · REFACTOR To-Do · `refactor/refactor` 브랜치 반영 |
+| 2026-05-29 | 유형 3 REFACTOR (RF-3-1~3-5) · Shared Kernel · coverage 96%+ |

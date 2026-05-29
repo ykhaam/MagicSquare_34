@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from entity.constants import GRID_SIZE
 from entity.domain_codes import DOMAIN_INVALID_GRID_CODE, DOMAIN_INVALID_GRID_MESSAGE
 from entity.exceptions import DomainInvalidGridError
 from entity.grid_validator import is_valid_structure
@@ -35,7 +36,7 @@ class MagicGrid:
             )
         rows = tuple(
             (raw[row][0], raw[row][1], raw[row][2], raw[row][3])
-            for row in range(4)
+            for row in range(GRID_SIZE)
         )
         return cls(cells=rows)
 

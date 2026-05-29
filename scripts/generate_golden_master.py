@@ -13,7 +13,7 @@ for path in (str(SRC), str(ROOT)):
         sys.path.insert(0, path)
 
 from boundary.ui_boundary import UIBoundary  # noqa: E402
-from control.puzzle_solver import solution  # noqa: E402
+from control.solve_partial_magic_square import solution  # noqa: E402
 from tests.golden_master.approve import build_golden_master_content  # noqa: E402
 
 DEFAULT_OUTPUT = ROOT / "tests" / "golden_master_expected.txt"

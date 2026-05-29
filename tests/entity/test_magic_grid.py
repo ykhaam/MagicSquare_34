@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from control.puzzle_solver import solution
+from control.solve_partial_magic_square import solution
 from entity.exceptions import DomainInvalidGridError, UnsolvableDomainError
 from entity.magic_grid import MagicGrid
 from tests.entity.conftest import G3, RD_04, RD_05, RD_06

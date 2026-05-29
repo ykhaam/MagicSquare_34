@@ -100,7 +100,7 @@ class TestMessageExactMatch:
         result = validator.validate(grid_none)
 
         # Then
-        assert result.error.code == "INVALID_SIZE"
+        assert result.error.code == INVALID_SIZE_CODE
         assert result.error.code is not None
         assert isinstance(result.error.code, str)
 

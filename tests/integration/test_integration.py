@@ -9,7 +9,7 @@ import pytest
 from boundary.error_codes import INVALID_EMPTY_COUNT_CODE, INVALID_SIZE_CODE
 from boundary.schemas import ErrorResponse
 from boundary.ui_boundary import UIBoundary
-from control.puzzle_solver import solution
+from control.solve_partial_magic_square import solution
 from data.matrix_repository import InMemoryMatrixRepository
 from entity.exceptions import DOMAIN_NO_SOLUTION_CODE
 from entity.services.magic_validator import is_magic_square

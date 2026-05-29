@@ -7,14 +7,15 @@ from unittest.mock import Mock
 
 import pytest
 
-from boundary.magic_square_boundary import MagicSquareBoundary
+from boundary.error_codes import INVALID_SIZE_CODE, INVALID_SIZE_MESSAGE
+from boundary.ui_boundary import MagicSquareBoundary
 from boundary.schemas import ErrorResponse
 from tests.boundary.ac_fr_01_01_constants import EXCLUDED_AC_MARKERS
 
 AC_ID = "AC-FR-01-01"
 PRD_SECTION = "PRD §8.1"
-EXPECTED_CODE = "INVALID_SIZE"
-EXPECTED_MESSAGE = "Grid must be 4x4."
+EXPECTED_CODE = INVALID_SIZE_CODE
+EXPECTED_MESSAGE = INVALID_SIZE_MESSAGE
 
 THREE_BY_FOUR_GRID: list[list[int]] = [
     [1, 2, 3, 4],

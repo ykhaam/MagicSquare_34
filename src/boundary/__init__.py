@@ -1,7 +1,7 @@
 """Boundary layer — input validation and UI-facing response envelopes."""
 
 from boundary.input_validator import InputValidator
-from boundary.magic_square_boundary import MagicSquareBoundary, UIBoundary
+from boundary.ui_boundary import MagicSquareBoundary, UIBoundary
 from boundary.schemas import ErrorDetail, ErrorResponse, FailureResponse
 
 __all__ = [
