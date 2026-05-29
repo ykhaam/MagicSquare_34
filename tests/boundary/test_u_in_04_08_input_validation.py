@@ -1,10 +1,16 @@
-"""Boundary input validation RED skeletons — U-IN-04~08 (Report/07 §5.1)."""
+"""Boundary input validation — U-IN-04~08 (value range, duplicate, type)."""
 
 from __future__ import annotations
 
-import pytest
-
+from boundary.error_codes import (
+    DUPLICATE_VALUE_CODE,
+    E004_CODE,
+    E005_CODE,
+    INVALID_SIZE_CODE,
+    INVALID_VALUE_RANGE_MESSAGE,
+)
 from boundary.input_validator import InputValidator
+from tests.entity.conftest import RD_05, RD_06
 
 
 class TestUIn04Through08InputValidation:
@@ -13,49 +19,73 @@ class TestUIn04Through08InputValidation:
     def test_u_in_04_minus_one_returns_e004(self) -> None:
         """U-IN-04a — cell -1 triggers E004 / UI_INVALID_VALUE_RANGE."""
         # Given
-        # matrix = valid 4x4 with one cell set to -1
+        matrix = [
+            [16, 0, 3, 13],
+            [5, 11, 10, 8],
+            [9, 7, 6, 12],
+            [4, -1, 14, 0],
+        ]
+        validator = InputValidator()
 
         # When
-        # result = validator.validate(matrix)
+        result = validator.validate(matrix)
 
-        pytest.fail("RED: U-IN-04 — 셀 -1 → E004 범위 위반")
+        # Then
+        assert result is not None
+        assert result.error.code == E004_CODE
+        assert result.error.message == INVALID_VALUE_RANGE_MESSAGE
 
     def test_u_in_05_seventeen_returns_e004(self) -> None:
         """U-IN-04b — RD-06 value 17 triggers E004."""
         # Given
-        # matrix = PRD RD-06 invalid range grid
+        validator = InputValidator()
 
         # When
-        # result = validator.validate(matrix)
+        result = validator.validate(RD_06)
 
-        pytest.fail("RED: U-IN-05 — RD-06 값 17 → E004 범위 위반")
+        # Then
+        assert result is not None
+        assert result.error.code == E004_CODE
 
     def test_u_in_06_duplicate_nonzero_returns_e005(self) -> None:
         """U-IN-05 — RD-05 duplicate non-zero triggers E005."""
         # Given
-        # matrix = PRD RD-05 duplicate value grid
+        validator = InputValidator()
 
         # When
-        # result = validator.validate(matrix)
+        result = validator.validate(RD_05)
 
-        pytest.fail("RED: U-IN-06 — RD-05 non-zero 중복 → E005")
+        # Then
+        assert result is not None
+        assert result.error.code == E005_CODE
+        assert result.error.code == DUPLICATE_VALUE_CODE
 
     def test_u_in_07_out_of_range_ninety_nine_returns_e004(self) -> None:
         """U-IN extension — value 99 in cell triggers E004 (Report/02 UT-E04)."""
         # Given
-        # matrix = valid 4x4 with one cell set to 99
+        matrix = [
+            [16, 0, 3, 13],
+            [5, 11, 10, 8],
+            [9, 7, 6, 12],
+            [4, 14, 99, 0],
+        ]
+        validator = InputValidator()
 
         # When
-        # result = validator.validate(matrix)
+        result = validator.validate(matrix)
 
-        pytest.fail("RED: U-IN-07 — 셀 99 → E004 범위 위반")
+        # Then
+        assert result is not None
+        assert result.error.code == E004_CODE
 
     def test_u_in_08_non_list_grid_returns_e001(self) -> None:
         """U-IN extension — non-list grid type triggers E001 (PRD EX-05)."""
         # Given
-        # matrix = "not_a_grid"
+        validator = InputValidator()
 
         # When
-        # result = validator.validate(matrix)
+        result = validator.validate("not_a_grid")
 
-        pytest.fail("RED: U-IN-08 — 비-list 입력 → E001 size 거부")
+        # Then
+        assert result is not None
+        assert result.error.code == INVALID_SIZE_CODE

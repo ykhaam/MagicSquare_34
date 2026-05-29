@@ -9,6 +9,7 @@ import pytest
 
 from boundary.magic_square_boundary import MagicSquareBoundary
 from boundary.schemas import ErrorResponse
+from tests.boundary.ac_fr_01_01_constants import EXCLUDED_AC_MARKERS
 
 AC_ID = "AC-FR-01-01"
 PRD_SECTION = "PRD §8.1"
@@ -20,21 +21,6 @@ THREE_BY_FOUR_GRID: list[list[int]] = [
     [5, 6, 7, 8],
     [9, 10, 11, 12],
 ]
-
-EXCLUDED_AC_MARKERS: tuple[str, ...] = (
-    "AC-FR-01-02",
-    "AC-FR-01-03",
-    "AC-FR-01-04",
-    "AC-FR-01-05",
-    "UI_INVALID_EMPTY_COUNT",
-    "UI_INVALID_VALUE_RANGE",
-    "UI_DUPLICATE_VALUE",
-    "DOMAIN_NO_SOLUTION",
-    "FR-02",
-    "FR-03",
-    "FR-04",
-    "FR-05",
-)
 
 
 class TestAcFr0101InvalidSize:

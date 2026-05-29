@@ -6,8 +6,15 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-INVALID_SIZE_CODE = "INVALID_SIZE"
-INVALID_SIZE_MESSAGE = "Grid must be 4x4."
+from boundary.error_codes import INVALID_SIZE_CODE, INVALID_SIZE_MESSAGE
+
+__all__ = [
+    "INVALID_SIZE_CODE",
+    "INVALID_SIZE_MESSAGE",
+    "ErrorDetail",
+    "ErrorResponse",
+    "FailureResponse",
+]
 
 
 class ErrorDetail(BaseModel):
@@ -15,6 +22,14 @@ class ErrorDetail(BaseModel):
 
     code: str
     message: str
+
+
+class ErrorResponse(BaseModel):
+    """Flat error payload returned from Boundary solve on validation failure."""
+
+    code: str
+    message: str
+    field: str | None = None
 
 
 class FailureResponse(BaseModel):

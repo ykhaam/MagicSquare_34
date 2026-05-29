@@ -1,8 +1,13 @@
-"""Boundary flow isolation RED skeleton — U-FLOW-02 (extended)."""
+"""Boundary flow isolation — U-FLOW-02 (invalid inputs skip execute)."""
 
 from __future__ import annotations
 
-import pytest
+from unittest.mock import Mock
+
+from boundary.schemas import ErrorResponse
+from boundary.ui_boundary import UIBoundary
+from tests.entity.conftest import RD_04, RD_05, RD_06
+
 
 class TestUFlow02InvalidSkipsExecute:
     """U-FLOW-02 — invalid inputs must not call Control/Domain execute (0 times)."""
@@ -10,63 +15,76 @@ class TestUFlow02InvalidSkipsExecute:
     def test_u_flow_02_null_matrix_skips_execute(self) -> None:
         """U-FLOW-02a — null matrix: Failure; execute call_count==0."""
         # Given
-        # mock_execute = Mock(name="execute")
-        # boundary = UIBoundary(execute=mock_execute)
-        # matrix = None
+        mock_execute = Mock(name="execute")
+        boundary = UIBoundary(execute=mock_execute)
+        matrix = None
 
         # When
-        # result = boundary.solve(matrix)
+        result = boundary.solve(matrix)
 
-        pytest.fail("RED: U-FLOW-02 — null 입력 시 execute 0회")
+        # Then
+        assert isinstance(result, ErrorResponse)
+        mock_execute.assert_not_called()
+        assert mock_execute.call_count == 0
 
     def test_u_flow_02_invalid_size_skips_execute(self) -> None:
         """U-FLOW-02b — invalid size: Failure; execute call_count==0."""
         # Given
-        # mock_execute = Mock(name="execute")
-        # boundary = UIBoundary(execute=mock_execute)
-        # matrix = []
+        mock_execute = Mock(name="execute")
+        boundary = UIBoundary(execute=mock_execute)
+        matrix: list[list[int]] = []
 
         # When
-        # boundary.solve(matrix)
+        boundary.solve(matrix)
 
-        pytest.fail("RED: U-FLOW-02 — size 오류 시 execute 0회")
+        # Then
+        mock_execute.assert_not_called()
 
     def test_u_flow_02_invalid_empty_count_skips_execute(self) -> None:
         """U-FLOW-02c — empty count != 2: Failure; execute call_count==0."""
         # Given
-        # matrix = PRD RD-04
+        mock_execute = Mock(name="execute")
+        boundary = UIBoundary(execute=mock_execute)
 
         # When
-        # boundary.solve(matrix)
+        boundary.solve(RD_04)
 
-        pytest.fail("RED: U-FLOW-02 — 빈칸 개수 오류 시 execute 0회")
+        # Then
+        mock_execute.assert_not_called()
 
     def test_u_flow_02_invalid_range_skips_execute(self) -> None:
         """U-FLOW-02d — value range violation: Failure; execute call_count==0."""
         # Given
-        # matrix = PRD RD-06
+        mock_execute = Mock(name="execute")
+        boundary = UIBoundary(execute=mock_execute)
 
         # When
-        # boundary.solve(matrix)
+        boundary.solve(RD_06)
 
-        pytest.fail("RED: U-FLOW-02 — 범위 위반 시 execute 0회")
+        # Then
+        mock_execute.assert_not_called()
 
     def test_u_flow_02_duplicate_skips_execute(self) -> None:
         """U-FLOW-02e — duplicate non-zero: Failure; execute call_count==0."""
         # Given
-        # matrix = PRD RD-05
+        mock_execute = Mock(name="execute")
+        boundary = UIBoundary(execute=mock_execute)
 
         # When
-        # boundary.solve(matrix)
+        boundary.solve(RD_05)
 
-        pytest.fail("RED: U-FLOW-02 — 중복 시 execute 0회")
+        # Then
+        mock_execute.assert_not_called()
 
     def test_u_flow_02_ragged_grid_skips_execute(self) -> None:
         """U-FLOW-02f — ragged 4 rows: Failure; execute call_count==0."""
         # Given
-        # matrix = [[]] * 4
+        mock_execute = Mock(name="execute")
+        boundary = UIBoundary(execute=mock_execute)
+        matrix: list[list[int]] = [[]] * 4
 
         # When
-        # boundary.solve(matrix)
+        boundary.solve(matrix)
 
-        pytest.fail("RED: U-FLOW-02 — ragged 격자 시 execute 0회")
+        # Then
+        mock_execute.assert_not_called()
