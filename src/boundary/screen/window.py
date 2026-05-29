@@ -16,6 +16,10 @@ from PyQt6.QtWidgets import (
 )
 
 from boundary.magic_square_boundary import MagicSquareBoundary
+from boundary.error_codes import (
+    UI_INTERNAL_CONTRACT_CODE,
+    UI_INTERNAL_CONTRACT_MESSAGE,
+)
 from boundary.schemas import ErrorResponse
 from boundary.screen.constants import (
     GRID_DIMENSION,
@@ -246,4 +250,7 @@ class MagicSquareWindow(QMainWindow):
             self._show_success(result)
             return
 
-        self._show_error("UI_INTERNAL", "Unexpected Boundary response type.")
+        self._show_error(
+            UI_INTERNAL_CONTRACT_CODE,
+            UI_INTERNAL_CONTRACT_MESSAGE,
+        )

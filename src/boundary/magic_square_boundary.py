@@ -6,8 +6,8 @@ from collections.abc import Callable
 from typing import Any
 
 from boundary.input_validator import InputValidator
-from boundary.schemas import ErrorResponse, FailureResponse
-from entity.exceptions import UnsolvableDomainError
+from boundary.response_contract import map_domain_exception, validate_success_vector
+from boundary.schemas import ErrorResponse
 
 
 class MagicSquareBoundary:
@@ -38,9 +38,17 @@ class MagicSquareBoundary:
                 message=failure.error.message,
             )
         try:
-            return self._resolve(grid)
-        except UnsolvableDomainError as exc:
-            return ErrorResponse(code=exc.code, message=exc.message)
+            raw_result = self._resolve(grid)
+        except Exception as exc:
+            mapped = map_domain_exception(exc)
+            if mapped is not None:
+                return mapped
+            raise
+
+        contract_error = validate_success_vector(raw_result)
+        if contract_error is not None:
+            return contract_error
+        return raw_result
 
 
 class UIBoundary(MagicSquareBoundary):

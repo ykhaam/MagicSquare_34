@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-AC_FR_01_01 = "AC-FR-01-01"
+from boundary.error_codes import INVALID_SIZE_CODE, INVALID_SIZE_MESSAGE
 
-INVALID_SIZE_CODE = "INVALID_SIZE"
-INVALID_SIZE_MESSAGE = "Grid must be 4x4."
+AC_FR_01_01 = "AC-FR-01-01"
 
 IN_SCOPE_SCENARIO_TAGS: frozenset[str] = frozenset(
     {"null", "empty_list", "four_empty_rows", "size_3x4"}
