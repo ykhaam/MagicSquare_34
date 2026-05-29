@@ -1,0 +1,19 @@
+[project]
+name = "magicsquare"
+version = "0.1.0"
+description = "4x4 Magic Square TDD practice"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.4", "black>=24.0"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.black]
+line-length = 88
+
+[tool.ruff]
+line-length = 88

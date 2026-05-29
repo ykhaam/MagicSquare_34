@@ -1,0 +1,61 @@
+---
+description: Absolute prohibitions — print, TDD violations, ECB inversion, test weakening
+alwaysApply: true
+---
+
+# MagicSquare Forbidden Patterns
+
+## Purpose
+
+Protect TDD feedback, contracts, and layer boundaries. Full list lives here only (not duplicated in phase rules).
+
+## Prohibitions
+
+### print() debugging
+
+- **Pattern:** `print()`, `pprint()` for debugging.
+- **Reason:** Pollutes test/CI output; unrelated side effects.
+- **Instead:** `logging` (DEBUG) or pytest `capsys`; local-only `breakpoint()`.
+
+### Magic numbers and hardcoded strings
+
+- **Pattern:** Literals `34`, `4`, `2`, fixed UI error messages in code.
+- **Reason:** Single source of truth violation; Report contract drift.
+- **Instead:** `MagicConstant`, `SIZE=4`, `EMPTY_COUNT=2`, `ERROR_MESSAGES` dict (Report 02 §2.4).
+
+### Bare except
+
+- **Pattern:** `except:` or `except Exception:` that swallows errors.
+- **Reason:** Hides failures; same effect as weakening tests.
+- **Instead:** Specific exception types; map to `DOMAIN_*` / `UI_*` codes; re-raise or explicit Result.
+
+### Production without RED
+
+- **Pattern:** Add or change `src/` without a preceding failing test.
+- **Reason:** Breaks TDD cycle.
+- **Instead:** Write failing test in `tests/` first; then green phase.
+
+### Test weakening
+
+- **Pattern:** Loosen asserts, delete tests, `@pytest.mark.skip`, `xfail` to pass.
+- **Reason:** RG-03 regression loss.
+- **Instead:** Fix production code or fixtures.
+
+### ECB dependency inversion
+
+- **Pattern:** `entity` imports `boundary`, `control`, or `tests.boundary`.
+- **Reason:** Violates `boundary → control → entity`.
+- **Instead:** boundary/control call entity only.
+
+### Boundary track contamination
+
+- **Pattern:** `UT-*` tests call real Domain without Mock.
+- **Reason:** Dual-Track boundary track must stay isolated.
+- **Instead:** `unittest.mock` / `pytest-mock`; stub `solveRaw` return or failure.
+
+## Agent checklist
+
+- [ ] No `print()` in new/changed code
+- [ ] No new magic numbers for 34, 4, 2, or error strings
+- [ ] No bare `except`
+- [ ] No skip/xfail/deleted tests to go Green

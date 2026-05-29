@@ -1,0 +1,92 @@
+---
+description: Dual-Track TDD phases, pytest, AAA, coverage, Test-ID naming
+alwaysApply: true
+---
+
+# MagicSquare TDD & Testing
+
+## Purpose
+
+Enforce Red-Green-Refactor per slice and align tests with Report 02 Test-IDs.
+
+## Cycle
+
+`spec → red → green → refactoring → develop`
+
+Do not mix Logic (`DT-*`) and Boundary (`UT-*`) in one large batch.
+
+## red_phase
+
+**Description:** Write failing tests first; confirm Red before production code.
+
+**Must:**
+
+- Add one slice per Report 02 Test-ID (`DT-*`, `UT-*`, `DATA-T*`, `IT-*`).
+- Run pytest; new test must **fail** before green phase.
+- On `red` branch: change only under `tests/` (minimal stubs/interfaces if unavoidable).
+- Boundary `UT-*`: Mock Domain; assert Domain is **not** called when validation fails.
+
+**Must not:**
+
+- Add `src/` without Red confirmation.
+- Delete, weaken, skip, or xfail tests to hide failure.
+- Implement features on green/refactoring branches.
+
+## green_phase
+
+**Description:** Minimal code to pass Red tests only.
+
+**Must:**
+
+- Keep all new tests Green with smallest change.
+- On `green` branch: change only `src/` production code.
+- Honor public contract (input grid, `int[6]` output, Error code/message).
+
+**Must not:**
+
+- Refactor, rename, or deduplicate (refactor phase only).
+- Add behavior or public API without prior Red.
+- Change test expectations to force Green.
+
+## refactor_phase
+
+**Description:** Improve structure without changing behavior or contracts.
+
+**Must:**
+
+- Keep full pytest suite Green.
+- Maintain coverage ≥ 80% global; targets entity 95% / boundary 85% branch (Report 02 §4.4).
+- Merge to `develop` after refactoring branch; one phase branch at a time.
+
+**Must not:**
+
+- Delete, weaken, or skip tests.
+- Change behavior or contracts without new Red tests.
+- Work on red/green/refactoring branches simultaneously.
+
+## pytest conventions
+
+| Item | Rule |
+|------|------|
+| Framework | pytest |
+| Pattern | AAA — separate Arrange / Act / Assert (blank line or comment) |
+| Naming | `test_` prefix; map Test-ID e.g. `test_dt_e01_invalid_size` |
+| Markers | entity=`DT-*`, boundary=`UT-*`, integration=`IT-*` |
+| Fixture scope | **function** default; **module** only when shared; **session** forbidden |
+
+## Examples (AAA)
+
+```python
+def test_dt_e01_invalid_size() -> None:
+  # Arrange
+  grid = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+
+  # Act / Assert
+  with pytest.raises(DomainError):
+      MagicGrid.from_raw(grid)
+```
+
+## Pointers
+
+- RED order (structure first): Report 02 §1.5.4
+- Forbidden details: `magicsquare-forbidden.mdc`

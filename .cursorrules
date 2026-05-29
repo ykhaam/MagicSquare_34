@@ -1,0 +1,39 @@
+################################################################################
+# MagicSquare_ — rule index (details in .cursor/rules/*.mdc)
+################################################################################
+project:
+  name: MagicSquare_
+  description: 4x4 magic-square TDD — layers, contracts, Red-Green-Refactor
+  python_version: "3.10+"
+  docs:
+    problem_definition: Report/01_Magic-Square-Problem-Definition-Report.md
+    tdd_design: Report/02_Magic-Square-Dual-Track-TDD-Design.md
+    phase03_kickoff: Report/03_Magic-Square-Cursorrules-and-Phase03-Kickoff-Report.md
+    rules_migration: Report/04_Magic-Square-Cursor-Rules-Migration-Report.md
+  contract:
+    input: "list[list[int]] 4x4; 0=empty; exactly 2 empties; values 0 or 1..16"
+    output_success: "list[int] len 6 [r1,c1,n1,r2,c2,n2] 1-index"
+    magic_sum: 34
+  branch_flow: spec -> red -> green -> refactoring -> develop
+  rules_location: .cursor/rules/
+
+rules_index:
+  - file: magicsquare-project.mdc
+    apply: always
+    topic: project, contract, AI before/during/after
+  - file: magicsquare-forbidden.mdc
+    apply: always
+    topic: print, TDD violations, ECB inversion, test weakening
+  - file: magicsquare-tdd-testing.mdc
+    apply: always
+    topic: red/green/refactor phases, pytest, AAA, Test-IDs
+  - file: magicsquare-python-code-style.mdc
+    apply: "globs **/*.py"
+    topic: PEP8, type hints, Google docstrings, Black 88
+  - file: magicsquare-ecb-architecture.mdc
+    apply: "globs src/**, tests/**"
+    topic: ECB layers, dependency, folder layout
+
+################################################################################
+# Legacy YAML sections removed — SSOT is .cursor/rules/*.mdc (2026-05-28)
+################################################################################

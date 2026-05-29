@@ -1,0 +1,48 @@
+---
+description: Python 3.10+, PEP8, type hints, Google docstrings, Black 88
+globs: "**/*.py"
+alwaysApply: false
+---
+
+# MagicSquare Python Code Style
+
+## Must
+
+- Python **3.10+**.
+- **PEP 8** strictly; line length **88** (Black).
+- **Type hints** on every function parameter and return value (including `-> None`).
+- **Google-style docstrings** on every public method and class.
+- Format with **Black**; lint with **Ruff** (PEP 8 compatible).
+- Import order: stdlib → third-party → local; **no reverse-layer imports** (see ECB rule).
+
+## Must not
+
+- Public APIs without type hints.
+- `# type: ignore` without a one-line justification comment.
+- `print()` for debugging (see forbidden rule).
+
+## Example (GOOD)
+
+```python
+def locate_empty_cells(grid: MagicGrid) -> tuple[Position, Position]:
+    """Return the two empty cell positions in row-major order.
+
+    Args:
+        grid: Valid magic grid with exactly two empty cells.
+
+    Returns:
+        First and second empty positions (1-indexed).
+
+    Raises:
+        DomainError: If grid is invalid.
+    """
+    ...
+```
+
+## Example (BAD)
+
+```python
+def locate_empty_cells(grid):  # missing hints and docstring
+    print(grid)
+    ...
+```
