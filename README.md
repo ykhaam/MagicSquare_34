@@ -1,7 +1,8 @@
 # MagicSquare_
 
 4×4 **마방진(Magic Square)** TDD 연습 프로젝트입니다.  
-**Phase 01~02** 문제 정의·Dual-Track 설계, **Phase 03** 구현 착수, **Phase 04** Cursor 규칙(`.mdc`) 이중 레이어까지 문서화했습니다.
+**Phase 01~04** 문제 정의·Dual-Track 설계·Cursor 규칙(`.mdc`)까지 문서화했고, **Track A/B GREEN** · **Golden Master** · **PyQt6 GUI**까지 완료했습니다.  
+현재 **`refactor/refactor`** 브랜치에서 [Report 12](./Report/12_Magic-Square-REFACTOR-Planning-Session-Report.md) REFACTOR 계획에 따라 ECB 분리·커버리지 80%를 진행합니다.
 
 저장소: [ykhaam/MagicSquare_xx](https://github.com/ykhaam/MagicSquare_xx)
 
@@ -91,28 +92,28 @@ develop                 ← 통합 (merge 후 Green 목표)
 spec                    ← 수용 조건·설계 문서
 feature/dual-track-tdd  ← Dual-Track RED 설계·스켈레톤 (병합 완료 시 develop)
   → stabilize/red       ← RED 단계 시 생성 (tests/ only)
-    → stabilize/green   ← GREEN 단계 (**현재 로컬에 존재**)
-      → stabilize/refactoring  ← REFACTOR 단계 시 생성
+    → stabilize/green   ← GREEN 단계 (완료)
+      → refactor/refactor  ← REFACTOR 단계 (**현재 작업**)
         → develop
 ```
 
 | 브랜치 | 용도 | 변경 허용 | 로컬 |
 |--------|------|-----------|------|
 | `main` | 문서·동작 스냅샷 | 문서·릴리스 | ✅ |
-| `develop` | TDD 통합 | merge from `stabilize/refactoring` | ✅ |
+| `develop` | TDD 통합 | merge from `refactor/refactor` | ✅ |
 | `spec` | 설계·PRD·규칙 | `Report/`, `docs/`, `.cursor/` | ✅ |
 | `feature/dual-track-tdd` | Dual-Track RED 묶음 (레거시) | — | ✅ |
-| **`stabilize/green`** | **GREEN 슬라이스** | **`src/`만** | ✅ **작업 중** |
-| `stabilize/red` | RED 슬라이스 | `tests/`만 | ⏳ **필요 시 생성** (`git checkout -b stabilize/red develop`) |
-| `stabilize/refactoring` | REFACTOR 슬라이스 | 구조·이름 (계약 동일) | ⏳ **필요 시 생성** |
+| `stabilize/green` | GREEN 슬라이스 | `src/`만 | ✅ (완료) |
+| `stabilize/red` | RED 슬라이스 | `tests/`만 | ⏳ 필요 시 생성 |
+| **`refactor/refactor`** | **REFACTOR 계획·슬라이스** | 구조·이름 (계약 동일) | ✅ **작업 중** |
 
-TDD 사이클: `spec → stabilize/red → stabilize/green → stabilize/refactoring → develop` (**동시 3분기 금지**)
+TDD 사이클: `spec → stabilize/red → stabilize/green → refactor/refactor → develop` (**동시 3분기 금지**)
 
 | 단계 | 커밋 단위 | 브랜치 | 이번 작업 |
 |------|-----------|--------|-----------|
 | **RED** | 테스트 **3건** = 1 커밋 | `stabilize/red` (생성 후) | `tests/`만 |
 | **GREEN** | **RED 1묶음** = 1 커밋 | **`stabilize/green`** | `src/`만 · 해당 묶음 전건 PASS |
-| **REFACTOR** | 슬라이스별 | `stabilize/refactoring` (생성 후) | **이번 커밋 범위 밖** |
+| **REFACTOR** | 슬라이스별 | **`refactor/refactor`** | 계약 불변 · Golden Master Green 유지 |
 
 ```bash
 # RED 시작할 때만 (아직 브랜치 없으면)
@@ -145,21 +146,17 @@ MagicSquare_/
 │   ├── entity/               # DT-* · D-* (Mock 금지)
 │   ├── data/                 # DATA-T*
 │   └── integration/          # IT-*
-├── Report/
-│   ├── 01_Magic-Square-Problem-Definition-Report.md
-│   ├── 02_Magic-Square-Dual-Track-TDD-Design.md
-│   ├── 03_Magic-Square-Cursorrules-and-Phase03-Kickoff-Report.md
-│   └── 04_Magic-Square-Cursor-Rules-Migration-Report.md
-└── Prompting/
-    ├── 01_Magic-Square-Problem-Definition-Prompt.md
-    ├── 02_Magic-Square-Prompt.md
-    ├── 03_Magic-Square-Phase03-Cursorrules-Prompt.md
-    └── 04_Magic-Square-Cursor-Rules-Migration-Prompt.md
+├── Report/                   # 01~12 세션·설계 보고서
+├── Prompting/                # 01~12 Transcript
+├── tests/golden_master/      # GM approve · contract helpers
+└── scripts/generate_golden_master.py
 ```
 
 ---
 
-## 문서 바로가기 (Report 01~04)
+## 문서 바로가기
+
+### 설계 · Phase (01~04)
 
 | 문서 | 설명 |
 |------|------|
@@ -167,10 +164,19 @@ MagicSquare_/
 | [Report/02](./Report/02_Magic-Square-Dual-Track-TDD-Design.md) | Logic / UI / Data / Integration · Traceability |
 | [Report/03](./Report/03_Magic-Square-Cursorrules-and-Phase03-Kickoff-Report.md) | `.cursorrules` YAML · `User` entity · Phase 03 kickoff |
 | [Report/04](./Report/04_Magic-Square-Cursor-Rules-Migration-Report.md) | `.mdc` 5파일 · 슬림 `.cursorrules` |
-| [Prompting/01](./Prompting/01_Magic-Square-Problem-Definition-Prompt.md) | Turn 01~02 · 문제 정의 워크숍 |
-| [Prompting/02](./Prompting/02_Magic-Square-Prompt.md) | Turn 03~18 · Dual-Track 설계 |
-| [Prompting/03](./Prompting/03_Magic-Square-Phase03-Cursorrules-Prompt.md) | Turn 19~27 · `.cursorrules` · `User` |
-| [Prompting/04](./Prompting/04_Magic-Square-Cursor-Rules-Migration-Prompt.md) | Turn 28~32 · `.mdc` 마이그레이션 |
+
+### TDD 세션 (05~12)
+
+| Report | Prompting | 내용 |
+|--------|-----------|------|
+| [05](./Report/05_Magic-Square-Level1-5-Alignment-Verification-Report.md) | [05](./Prompting/05_Magic-Square-Level1-5-Alignment-Transcript-Prompt.md) | Level 1~5 정렬 |
+| [06](./Report/06_Magic-Square-Dual-Track-TDD-RED-Session-Report.md) | [06](./Prompting/06_Magic-Square-Dual-Track-TDD-RED-Session-Transcript-Prompt.md) | Dual-Track RED |
+| [07](./Report/07_Magic-Square-Dual-Track-TDD-RED-Design-Report.md) | [07](./Prompting/07_Magic-Square-Dual-Track-TDD-RED-Design-Transcript-Prompt.md) | RED 설계표 |
+| [08](./Report/08_Magic-Square-Dual-Track-TDD-RED-Skeleton-Session-Report.md) | [08](./Prompting/08_Magic-Square-Dual-Track-TDD-RED-Skeleton-Session-Transcript-Prompt.md) | RED Skeleton 28건 |
+| [09](./Report/09_Magic-Square-AC-FR-01-01-Boundary-GREEN-Session-Report.md) | [09](./Prompting/09_Magic-Square-AC-FR-01-01-Boundary-GREEN-Session-Transcript-Prompt.md) | AC-FR-01-01 GREEN |
+| [10](./Report/10_Magic-Square-Dual-Track-MVP-and-Screen-GUI-Session-Report.md) | — | MVP · PyQt6 GUI |
+| [11](./Report/11_Magic-Square-Golden-Master-Regression-Session-Report.md) | [11](./Prompting/11_Magic-Square-Golden-Master-Regression-Session-Transcript-Prompt.md) | Golden Master GM-1~3 |
+| **[12](./Report/12_Magic-Square-REFACTOR-Planning-Session-Report.md)** | **[12](./Prompting/12_Magic-Square-REFACTOR-Planning-Session-Transcript-Prompt.md)** | **REFACTOR 계획 · ECB · P0/P1** |
 
 ---
 
@@ -187,18 +193,20 @@ MagicSquare_/
 | **DATA-T01 ~ T05** | InMemory 저장소 | ✅ |
 | **IT-N01 ~ IT-E04** | 통합 (Boundary→Control→Entity) | ✅ |
 | **PyQt6 GUI** | `python -m boundary.screen` · `magicsquare-gui` | ✅ (optional `[gui]`) |
-| **`stabilize/refactoring`** | 구조 정리 · 커버리지 80%+ | ⏳ 선택 |
-| `develop` / `main` merge | MVP 마일스톤 | ⏳ |
-
-상세 세션: [Report 09](./Report/09_Magic-Square-AC-FR-01-01-Boundary-GREEN-Session-Report.md) (AC-FR-01-01) · [Report 10](./Report/10_Magic-Square-Dual-Track-MVP-and-Screen-GUI-Session-Report.md) (MVP · GUI)
+| **Golden Master** | GM-TC-01~05 · `golden_master_expected.txt` | ✅ [Report 11](./Report/11_Magic-Square-Golden-Master-Regression-Session-Report.md) |
+| **REFACTOR 계획** | ECB gap · 테스트 선행 · P0/P1 슬라이스 | ✅ [Report 12](./Report/12_Magic-Square-REFACTOR-Planning-Session-Report.md) |
+| **REFACTOR 구현** | `two_cell_solver` · UT-F01/F02 · Screen UIBoundary | ⏳ `refactor/refactor` |
+| **커버리지 80%+** | Entity 95% / Boundary 85% / 전체 80% | ⏳ (현재 ~67%) |
+| `develop` / `main` merge | MVP + REFACTOR 마일스톤 | ⏳ |
 
 ---
 
 ## 다음 단계
 
-1. **`stabilize/refactoring`:** 중복 제거·커버리지 80%+ 측정 후 `develop` merge
-2. **File JSON `MatrixRepository`** (Report 02 옵션 B) — `IT-E03` / `DATA-T03`
-3. 계약 충돌 시 Report **02 우선** · AI 규칙은 **04 + `.mdc`**
+1. **REFACTOR P0** ([Report 12 §9](./Report/12_Magic-Square-REFACTOR-Planning-Session-Report.md#9-권장-슬라이스-순서-p0--p1)): UT-F01/F02 → UT-E07 → DEF-003 → `two_cell_solver` 추출 → Screen `UIBoundary`
+2. **커버리지 80%+** 측정 후 `refactor/refactor` → `develop` merge
+3. **File JSON `MatrixRepository`** (Report 02 옵션 B) — `IT-E03` / `DATA-T03`
+4. 계약 충돌 시 Report **02 우선** · AI 규칙은 **04 + `.mdc`**
 
 ### GUI 실행 (PyQt6)
 
@@ -215,7 +223,7 @@ python -m venv .venv
 
 > **RED:** `stabilize/red` · **`tests/`만** · **3 test = 1 커밋**  
 > **GREEN:** `stabilize/green` · **`src/`만** · **RED 1묶음 = 1 커밋** (묶음 내 node id **전부 PASS**)  
-> **REFACTOR:** `stabilize/refactoring` · **이번 커밋/슬라이스에서 하지 않음**  
+> **REFACTOR:** `refactor/refactor` · **계약·Golden Master Green 유지** · Red 선행(UT-F01/F02 등) 후 구조 변경  
 > **Track A/B 동시 RED·GREEN 금지**  
 > SSOT: [Report 02 §1.5.4](./Report/02_Magic-Square-Dual-Track-TDD-Design.md#154-red-작성-순서-권장) · [docs/test_plan.md](./docs/test_plan.md)
 
@@ -343,7 +351,35 @@ python -m pytest \
 - [ ] Boundary: 85%+ branch (`pytest --cov=src/boundary`)
 - [ ] 전체: 80%+ (Report 02 §4.4)
 
-현재: `python -m pytest tests/ -q` → **73 passed**
+현재: `python -m pytest tests/ -q` → **73 passed** · Screen 커버리지 **0%**
+
+---
+
+### REFACTOR To-Do (Report 12 · P0 우선)
+
+> 상세: [Report 12 §8](./Report/12_Magic-Square-REFACTOR-Planning-Session-Report.md#8-리팩토링-대상-목록-우선순위)
+
+**P0 — 테스트 선행 후 `src/` 변경**
+
+- [ ] **RF-P0-1** UT-F01/F02 RED→GREEN — Boundary `int[6]`·1-index guard
+- [ ] **RF-P0-2** UT-E07 RED→GREEN — `DomainInvalidGridError` → `ErrorResponse`
+- [ ] **RF-P0-3** DEF-003 · `UI_INTERNAL_CONTRACT` — `error_codes.py` SSOT
+- [ ] **RF-P0-4** `entity/services/two_cell_solver.py` 추출 — Control thin orchestration
+- [ ] **RF-P0-5** Screen → `UIBoundary(execute=…)` · UT-GUI RED→GREEN
+
+**P1 — P0 Green 유지**
+
+- [ ] **RF-P1-1** `input_validator` ↔ `grid_validator` SSOT
+- [ ] **RF-P1-2** `ui_boundary` / `magic_square_boundary` 일원화
+- [ ] **RF-P1-3** rename: `puzzle_solver` → `solve_partial_magic_square`, `window` → `main_window`
+- [ ] **RF-P1-4** 커버리지 Entity 95% / Boundary 85% / 전체 80%
+
+```bash
+# REFACTOR 회귀 (매 슬라이스 후)
+python -m pytest tests/ -q
+python -m pytest -m golden_master -v
+```
+
 ---
 
 ## 범위
@@ -364,3 +400,4 @@ python -m pytest \
 | 2026-05-29 | Track A/B GREEN 완료 · Data/IT · PyQt6 GUI · [Report 10](./Report/10_Magic-Square-Dual-Track-MVP-and-Screen-GUI-Session-Report.md) |
 | 2026-05-29 | GM-1~2 Golden Master baseline · approve 패턴 · README GM-03 체크리스트 |
 | 2026-05-29 | [Report 11](./Report/11_Magic-Square-Golden-Master-Regression-Session-Report.md) · [Prompting 11](./Prompting/11_Magic-Square-Golden-Master-Regression-Session-Transcript-Prompt.md) |
+| 2026-05-29 | [Report 12](./Report/12_Magic-Square-REFACTOR-Planning-Session-Report.md) · REFACTOR To-Do · `refactor/refactor` 브랜치 반영 |
