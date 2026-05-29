@@ -409,4 +409,5 @@ python -m pytest tests/ --cov=src --cov-report=term-missing
 | 2026-05-29 | Track A/B GREEN 완료 · Data/IT · PyQt6 GUI · [Report 10](./Report/10_Magic-Square-Dual-Track-MVP-and-Screen-GUI-Session-Report.md) |
 | 2026-05-29 | GM-1~2 Golden Master baseline · approve 패턴 · README GM-03 체크리스트 |
 | 2026-05-29 | [Report 11](./Report/11_Magic-Square-Golden-Master-Regression-Session-Report.md) · [Prompting 11](./Prompting/11_Magic-Square-Golden-Master-Regression-Session-Transcript-Prompt.md) |
-| 2026-05-29 | 유형 3 REFACTOR (RF-3-1~3-5) · Shared Kernel · coverage 96%+ |
+| 2026-05-29 | [Report 13](./Report/13_Magic-Square-REFACTOR-Implementation-Session-Report.md) · [Prompting 13](./Prompting/13_Magic-Square-REFACTOR-Implementation-Session-Transcript-Prompt.md) · REFACTOR 유형 1~3 구현 |
+| 2026-05-29 | [Report 12](./Report/12_Magic-Square-REFACTOR-Planning-Session-Report.md) · REFACTOR 3유형 체크리스트 |
