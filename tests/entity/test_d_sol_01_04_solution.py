@@ -12,8 +12,8 @@ from tests.entity.conftest import G1, G2, G3
 class TestDSol01Through04Solution:
     """D-SOL-01~04 — solution vector contract (no Domain Mock)."""
 
-    def test_d_sol_01_g1_step_a_success(self) -> None:
-        """D-SOL-01 — G1 Step A success vector [2,2,7,3,3,10]."""
+    def test_d_sol_01_g1_step_b_success(self) -> None:
+        """D-SOL-01 — G1 Step B success vector [2,2,10,3,3,7]."""
         # Given
         grid = G1
 

@@ -24,3 +24,15 @@ line-length = 88
 
 [tool.ruff]
 line-length = 88
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "*/boundary/screen/*",
+    "*/boundary/magic_square_boundary.py",
+    "*/control/puzzle_solver.py",
+]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true

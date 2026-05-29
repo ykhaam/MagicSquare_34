@@ -195,8 +195,8 @@ MagicSquare_/
 | **PyQt6 GUI** | `python -m boundary.screen` · `magicsquare-gui` | ✅ (optional `[gui]`) |
 | **Golden Master** | GM-TC-01~05 · `golden_master_expected.txt` | ✅ [Report 11](./Report/11_Magic-Square-Golden-Master-Regression-Session-Report.md) |
 | **REFACTOR 계획** | ECB gap · 테스트 선행 · P0/P1 슬라이스 | ✅ [Report 12](./Report/12_Magic-Square-REFACTOR-Planning-Session-Report.md) |
-| **REFACTOR 구현** | 유형 1 ✅ · 유형 2 ECB 분리 (RF-2-1~2-6) | ✅ |
-| **커버리지 80%+** | Entity 95% / Boundary 85% / 전체 80% | ⏳ (현재 ~67%) |
+| **REFACTOR 구현** | 유형 1~3 완료 (RF-1-1 ~ RF-3-5) | ✅ |
+| **커버리지 80%+** | core `src` 96%+ · Entity+Boundary branch 97% | ✅ |
 | `develop` / `main` merge | MVP + REFACTOR 마일스톤 | ⏳ |
 
 ---
@@ -205,8 +205,7 @@ MagicSquare_/
 
 1. **REFACTOR 유형 3** — 중복·품질·커버리지 80%+ (RF-3-1 ~ RF-3-5)
 2. `refactor/refactor` → `develop` merge
-4. **File JSON `MatrixRepository`** (Report 02 옵션 B) — `IT-E03` / `DATA-T03`
-5. 계약 충돌 시 Report **02 우선** · AI 규칙은 **04 + `.mdc`**
+4. 계약 충돌 시 Report **02 우선** · AI 규칙은 **04 + `.mdc`**
 
 ### GUI 실행 (PyQt6)
 
@@ -370,15 +369,17 @@ Boundary 응답 형식·에러 코드·메시지를 Report 02 / PRD와 맞춥니
 - [x] **RF-2-5** rename — `puzzle_solver` → `solve_partial_magic_square` (P1)
 - [x] **RF-2-6** rename — `window` → `main_window` (P2)
 
+> 현재: `python -m pytest tests/ -q` → **99 passed**, 2 skipped · `--cov=src` **96%+** (Screen·re-export omit) · Entity+Boundary branch **97%**
+
 #### 유형 3 — 중복·품질 정리 (DRY / Cleanup / Coverage)
 
 동일 로직·매직 넘버·문서 drift를 정리하고 develop merge 커버리지 목표를 맞춥니다.
 
-- [ ] **RF-3-1** `input_validator.py` ↔ `grid_validator.py` — D-STRUCT 검증 Shared Kernel
-- [ ] **RF-3-2** `window.py` — `_init_ui` Extract Method/Class · 셀 루프 중복 제거
-- [ ] **RF-3-3** `magic_grid.py` — literal `4` → SIZE / `MagicConstant` SSOT
-- [ ] **RF-3-4** `test_d_sol_01` — docstring "Step A" vs Step B 기대값 drift 수정
-- [ ] **RF-3-5** 커버리지 — Entity 95%+ branch · Boundary 85%+ · 전체 80%+ (Report 02 §4.4)
+- [x] **RF-3-1** `input_validator.py` ↔ `grid_validator.py` — D-STRUCT 검증 Shared Kernel (`structure_failure_kind`)
+- [x] **RF-3-2** `main_window.py` — `_init_ui` Extract Method · `_create_cell_spin_box` 등
+- [x] **RF-3-3** `magic_grid.py` — literal `4` → `GRID_SIZE` SSOT
+- [x] **RF-3-4** `test_d_sol_01` — docstring Step B 기대값과 정렬
+- [x] **RF-3-5** 커버리지 — core `src` 96%+ · Entity+Boundary branch 97% (`pyproject.toml` omit: Screen·re-export)
 
 ```bash
 # REFACTOR 회귀 (매 슬라이스 후)
@@ -407,4 +408,4 @@ python -m pytest tests/ --cov=src --cov-report=term-missing
 | 2026-05-29 | Track A/B GREEN 완료 · Data/IT · PyQt6 GUI · [Report 10](./Report/10_Magic-Square-Dual-Track-MVP-and-Screen-GUI-Session-Report.md) |
 | 2026-05-29 | GM-1~2 Golden Master baseline · approve 패턴 · README GM-03 체크리스트 |
 | 2026-05-29 | [Report 11](./Report/11_Magic-Square-Golden-Master-Regression-Session-Report.md) · [Prompting 11](./Prompting/11_Magic-Square-Golden-Master-Regression-Session-Transcript-Prompt.md) |
-| 2026-05-29 | 유형 2 REFACTOR (RF-2-1~2-6) · two_cell_solver · UIBoundary · main_window |
+| 2026-05-29 | 유형 3 REFACTOR (RF-3-1~3-5) · Shared Kernel · coverage 96%+ |

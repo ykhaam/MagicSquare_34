@@ -15,12 +15,12 @@ from boundary.error_codes import (
     INVALID_VALUE_RANGE_MESSAGE,
 )
 from boundary.schemas import ErrorDetail, FailureResponse
-from entity.constants import (
-    EMPTY_CELL_VALUE,
-    GRID_SIZE,
-    MAX_CELL_VALUE,
-    MIN_CELL_VALUE,
-    REQUIRED_EMPTY_COUNT,
+from entity.grid_validator import (
+    STRUCTURE_DUPLICATE_VALUE,
+    STRUCTURE_INVALID_EMPTY_COUNT,
+    STRUCTURE_INVALID_SIZE,
+    STRUCTURE_INVALID_VALUE_RANGE,
+    structure_failure_kind,
 )
 
 
@@ -41,17 +41,9 @@ class InputValidator:
             return size_error
 
         assert isinstance(grid, list)
-        empty_error = self._check_empty_count(grid)
-        if empty_error is not None:
-            return empty_error
-
-        range_error = self._check_value_range(grid)
-        if range_error is not None:
-            return range_error
-
-        duplicate_error = self._check_duplicates(grid)
-        if duplicate_error is not None:
-            return duplicate_error
+        content_error = self._check_structure_content(grid)
+        if content_error is not None:
+            return content_error
 
         return None
 
@@ -67,48 +59,19 @@ class InputValidator:
         """Return failure when grid is None or not 4×4."""
         if grid is None:
             return self._failure(INVALID_SIZE_CODE, INVALID_SIZE_MESSAGE)
-        if not isinstance(grid, list):
+        if structure_failure_kind(grid) == STRUCTURE_INVALID_SIZE:
             return self._failure(INVALID_SIZE_CODE, INVALID_SIZE_MESSAGE)
-        if len(grid) != GRID_SIZE:
-            return self._failure(INVALID_SIZE_CODE, INVALID_SIZE_MESSAGE)
-        for row in grid:
-            if not isinstance(row, list) or len(row) != GRID_SIZE:
-                return self._failure(INVALID_SIZE_CODE, INVALID_SIZE_MESSAGE)
         return None
 
-    def _check_empty_count(self, grid: list[list[Any]]) -> FailureResponse | None:
-        """Return failure when empty cell count is not exactly two."""
-        empty_count = sum(
-            1 for row in grid for value in row if value == EMPTY_CELL_VALUE
-        )
-        if empty_count != REQUIRED_EMPTY_COUNT:
+    def _check_structure_content(self, grid: list[list[Any]]) -> FailureResponse | None:
+        """Map entity structure failures to Boundary error codes."""
+        kind = structure_failure_kind(grid)
+        if kind is None:
+            return None
+        if kind == STRUCTURE_INVALID_EMPTY_COUNT:
             return self._failure(INVALID_EMPTY_COUNT_CODE, INVALID_EMPTY_COUNT_MESSAGE)
-        return None
-
-    def _check_value_range(self, grid: list[list[Any]]) -> FailureResponse | None:
-        """Return failure when any cell is outside 0 or 1..16."""
-        for row in grid:
-            for value in row:
-                if not isinstance(value, int):
-                    return self._failure(
-                        INVALID_VALUE_RANGE_CODE, INVALID_VALUE_RANGE_MESSAGE
-                    )
-                if value == EMPTY_CELL_VALUE:
-                    continue
-                if value < MIN_CELL_VALUE or value > MAX_CELL_VALUE:
-                    return self._failure(
-                        INVALID_VALUE_RANGE_CODE, INVALID_VALUE_RANGE_MESSAGE
-                    )
-        return None
-
-    def _check_duplicates(self, grid: list[list[Any]]) -> FailureResponse | None:
-        """Return failure when non-zero values repeat."""
-        seen: set[int] = set()
-        for row in grid:
-            for value in row:
-                if value == EMPTY_CELL_VALUE:
-                    continue
-                if value in seen:
-                    return self._failure(DUPLICATE_VALUE_CODE, DUPLICATE_VALUE_MESSAGE)
-                seen.add(value)
-        return None
+        if kind == STRUCTURE_INVALID_VALUE_RANGE:
+            return self._failure(INVALID_VALUE_RANGE_CODE, INVALID_VALUE_RANGE_MESSAGE)
+        if kind == STRUCTURE_DUPLICATE_VALUE:
+            return self._failure(DUPLICATE_VALUE_CODE, DUPLICATE_VALUE_MESSAGE)
+        return self._failure(INVALID_SIZE_CODE, INVALID_SIZE_MESSAGE)
