@@ -110,11 +110,22 @@ feature/dual-track-tdd  ← Dual-Track RED 설계·스켈레톤 (병합 완료 �
 
 TDD 사이클: `spec → red → green → refactoring → develop` (**동시에 red/green/refactoring 3분기 금지**)
 
+| 단계 | 커밋 단위 | 브랜치 | 이번 작업 |
+|------|-----------|--------|-----------|
+| **RED** | 테스트 **3건** = 1 커밋 | `red` | `tests/`만 |
+| **GREEN** | **RED 1묶음** = 1 커밋 | `green` | `src/`만 · 해당 묶음 전건 PASS |
+| **REFACTOR** | 슬라이스별 | `refactoring` | **이번 커밋 범위 밖** |
+
 ```bash
-# 예: 다음 GREEN 슬라이스
+# 1) RED 묶음 (예: RED-A1 = 3 test)
+git checkout red
+python -m pytest <node1> <node2> <node3> -v   # 전부 FAIL
+git add tests/ && git commit -m "test(boundary): RED-A1 UT-E01 invalid size (3)"
+
+# 2) GREEN — RED 1묶음당 src/ 1커밋 (REFACTOR 금지)
 git checkout green
-python -m pytest <node id> -v   # RED 확인 → src/ 최소 수정 → PASS
-git checkout -b refactoring     # REFACTOR 시에만
+python -m pytest <node1> <node2> <node3> -v   # 전부 FAIL → src/ 최소 수정 → PASS
+git add src/ && git commit -m "feat(boundary): GREEN-A1 UT-E01 invalid size (3)"
 ```
 
 ---
@@ -173,16 +184,18 @@ MagicSquare_/
 | `.cursorrules` · `User` entity | Report 03 · Phase 03 kickoff | ✅ |
 | **AC-FR-01-01** | `InputValidator` · `test_ac_fr_01_01_*` 9건 | ✅ GREEN (`green`) |
 | **`red`** | 실패 테스트 **3건/커밋** (`tests/` only) | 🔄 `red` 브랜치 · **다음: RED-A1** |
-| **`green`** | 최소 구현 슬라이스 (`src/` only) | 🔄 **현재 작업 브랜치** |
-| **`refactoring`** | 구조 정리 (계약 동일) | ⏳ |
+| **`green`** | **RED 1묶음** 최소 구현 (`src/` only) | 🔄 **현재 작업 브랜치** |
+| **`refactoring`** | 구조 정리 (계약 동일) | ⏳ **이번 범위 밖** |
 | `develop` / `main` merge | MVP 마일스톤 | ⏳ |
 
 상세 GREEN 세션: [Report 09](./Report/09_Magic-Square-AC-FR-01-01-Boundary-GREEN-Session-Report.md)
 
 ---
 
-1. **`red` 브랜치**에서 아래 **RED 묶음(3건/커밋)** 다음 미체크만 커밋 → `green`에서 **GREEN 1 node/커밋**
-2. Track A·B **동시 RED/GREEN 금지** — 한 트랙씩 `red` → `green` → `refactoring` → `develop`
+## 다음 단계
+
+1. **`red`:** 다음 **RED 묶음(3건)** 커밋 → **`green`:** 같은 ID **GREEN 1커밋**으로 해당 묶음 전건 PASS (**REFACTOR 금지**)
+2. Track A·B **동시 RED/GREEN 금지**
 3. RED 잔여 2건 묶음은 **마지막 슬라이스 예외** (총 건수 % 3 ≠ 0일 때만)
 4. 계약 충돌 시 Report **02 우선** · AI 규칙은 **04 + `.mdc`**
 
@@ -190,128 +203,95 @@ MagicSquare_/
 
 ## TDD RED / GREEN To-Do (체크리스트)
 
-> **RED:** `git checkout red` · **`tests/`만** · **3 test(또는 parametrize 3 id) = 1 커밋**  
-> **GREEN:** `git checkout green` · **`src/`만** · **1 node id = 1 커밋** · REFACTOR = 동작 동일  
+> **RED:** `red` · **`tests/`만** · **3 test = 1 커밋**  
+> **GREEN:** `green` · **`src/`만** · **RED 1묶음 = 1 커밋** (묶음 내 node id **전부 PASS**)  
+> **REFACTOR:** `refactoring` · **이번 커밋/슬라이스에서 하지 않음**  
 > **Track A/B 동시 RED·GREEN 금지**  
 > SSOT: [Report 02 §1.5.4](./Report/02_Magic-Square-Dual-Track-TDD-Design.md#154-red-작성-순서-권장) · [docs/test_plan.md](./docs/test_plan.md)
 
-### 매 슬라이스 (공통)
+### 매 슬라이스 (1 RED 묶음 → 1 GREEN 커밋)
 
-**RED (`red` 브랜치)**
-
-- [ ] 묶음 내 3건 `pytest` → **FAIL** 확인 후 `tests/`만 커밋
-- [ ] `git checkout green`
-
-**GREEN (`green` 브랜치)**
-
-- [ ] `python -m pytest <node id> -v` → **FAIL** (이미 PASS면 `src/` 수정 금지)
-- [ ] `src/` 최소 수정 · Boundary는 `FailureResponse`/`ErrorResponse` (throw 금지)
-- [ ] 동일 node id **PASS** · Conventional Commit 1건
+| # | RED (`red`) | GREEN (`green`) |
+|---|-------------|-----------------|
+| 1 | 묶음 내 3건 `pytest` → **전부 FAIL** · `tests/` 커밋 1건 | `git checkout green` |
+| 2 | — | 동일 3건 `pytest` → **전부 FAIL** 확인 (이미 PASS면 `src/` 수정 금지) |
+| 3 | — | `src/` 최소 수정 · Boundary는 `FailureResponse`/`ErrorResponse` (throw 금지) |
+| 4 | — | 동일 3건 **전부 PASS** · `src/` 커밋 1건 · **REFACTOR·설계 개선 금지** |
 
 ---
 
 ### Track A — Boundary (Mock 허용)
 
-#### RED 묶음 — 3건/커밋 (`red` 브랜치)
+**RED / GREEN 동일 ID** — 한 행 = RED 1커밋 + GREEN 1커밋
 
-| ID | 커밋 | 테스트 3건 (node id 요약) | 상태 |
-|----|------|---------------------------|------|
-| **RED-A0-1** | AC-FR-01-01 ① | `test_none_grid_returns_failure_with_invalid_size_code` · `[empty_list]` · `[four_empty_rows]` | ✅ |
-| **RED-A0-2** | AC-FR-01-01 ② | `[size_3x4]` · `test_none_grid_message_matches_prd_section_8_1_exactly` · `test_none_grid_returns_exact_invalid_size_code_string` | ✅ |
-| **RED-A0-3** | AC-FR-01-01 ③ | `test_none_grid_returns_pydantic_failure_response_type` · `test_ac_fr_01_01_scope_excludes_later_acceptance_criteria` · `test_ac_fr_01_01_scope_module_covers_only_null_and_size_tags` | ✅ |
-| **RED-A1** | UT-E01 ① | `test_none_grid_returns_invalid_size_failure` · `test_empty_list_returns_invalid_size_failure` · `test_ragged_four_rows_returns_invalid_size_failure` | ⏳ |
-| **RED-A2** | UT-E01 ② | `test_three_by_four_grid_returns_invalid_size_failure` · `test_none_grid_resolve_called_zero_times` · `test_none_grid_message_exact_prd_match` | ⏳ |
-| **RED-A3** | UT-E01 ③ (2건) | `test_none_grid_failure_result_is_error_response_type` · `test_scope_excludes_ac_fr01_02_to_05_and_fr02_to_fr05` | ⏳ |
-| **RED-A4** | U-IN ① | `test_u_in_04_minus_one_returns_e004` · `test_u_in_05_seventeen_returns_e004` · `test_u_in_06_duplicate_nonzero_returns_e005` | ⏳ |
-| **RED-A5** | U-IN ② (2건) | `test_u_in_07_out_of_range_ninety_nine_returns_e004` · `test_u_in_08_non_list_grid_returns_e001` | ⏳ |
-| **RED-A6** | U-FLOW ① | `test_u_flow_02_null_matrix_skips_execute` · `test_u_flow_02_invalid_size_skips_execute` · `test_u_flow_02_invalid_empty_count_skips_execute` | ⏳ |
-| **RED-A7** | U-FLOW ② | `test_u_flow_02_invalid_range_skips_execute` · `test_u_flow_02_duplicate_skips_execute` · `test_u_flow_02_ragged_grid_skips_execute` | ⏳ |
-| **RED-A8** | U-OUT | `test_u_out_01_success_payload_length_six` · `test_u_out_02_success_coordinates_one_indexed` · `test_u_out_03_success_fill_values_in_range` | ⏳ |
+| ID | RED (`red` · 3건) | GREEN (`green` · 묶음 전건 PASS) | 상태 |
+|----|-------------------|----------------------------------|------|
+| **A0-1** | `test_none_grid_returns_failure_with_invalid_size_code` · `[empty_list]` · `[four_empty_rows]` | `test_ac_fr_01_01_input_validation.py` 위 3 node | ✅ |
+| **A0-2** | `[size_3x4]` · `test_none_grid_message_matches_prd_section_8_1_exactly` · `test_none_grid_returns_exact_invalid_size_code_string` | 동일 파일 위 3 node | ✅ |
+| **A0-3** | `test_none_grid_returns_pydantic_failure_response_type` · scope 2건 | 동일 파일 위 3 node | ✅ |
+| **A1** | `test_validate_size.py` — none · empty · ragged | **GREEN-A1** — 위 3 node 동시 PASS | ⏳ |
+| **A2** | 3×4 · resolve 0회 · message exact | **GREEN-A2** | ⏳ |
+| **A3** | ErrorResponse type · scope (2건) | **GREEN-A3** | ⏳ |
+| **A4** | U-IN-04 · 05 · 06 | **GREEN-A4** | ⏳ |
+| **A5** | U-IN-07 · 08 (2건) | **GREEN-A5** | ⏳ |
+| **A6** | U-FLOW null · size · empty count | **GREEN-A6** | ⏳ |
+| **A7** | U-FLOW range · duplicate · ragged | **GREEN-A7** | ⏳ |
+| **A8** | U-OUT-01 · 02 · 03 | **GREEN-A8** | ⏳ |
 
-파일 접두: `tests/boundary/test_ac_fr_01_01_input_validation.py` (A0) · `test_validate_size.py` (A1~A3) · `test_u_in_04_08_input_validation.py` (A4~A5) · `test_u_flow_02_invalid_skips_execute.py` (A6~A7) · `test_u_out_01_03_output_contract.py` (A8)
+**pytest 예 (GREEN-A1):**
 
-- [ ] **RED-A1** — UT-E01 ① (3건)
-- [ ] **RED-A2** — UT-E01 ② (3건)
-- [ ] **RED-A3** — UT-E01 ③ (2건)
-- [ ] **RED-A4** — U-IN ① (3건)
-- [ ] **RED-A5** — U-IN ② (2건)
-- [ ] **RED-A6** — U-FLOW ① (3건)
-- [ ] **RED-A7** — U-FLOW ② (3건)
-- [ ] **RED-A8** — U-OUT (3건)
+```bash
+python -m pytest \
+  tests/boundary/test_validate_size.py::TestAcFr0101InvalidSize::test_none_grid_returns_invalid_size_failure \
+  tests/boundary/test_validate_size.py::TestAcFr0101InvalidSize::test_empty_list_returns_invalid_size_failure \
+  tests/boundary/test_validate_size.py::TestAcFr0101InvalidSize::test_ragged_four_rows_returns_invalid_size_failure \
+  -v
+```
 
-#### GREEN — 1 node/커밋 (`green` 브랜치) · RED-A1 이후 순서
+**체크리스트**
 
-**UT-E01** (`test_validate_size.py`)
+- [x] **RED-A0-1** + **GREEN-A0-1**
+- [x] **RED-A0-2** + **GREEN-A0-2**
+- [x] **RED-A0-3** + **GREEN-A0-3**
+- [ ] **RED-A1** + **GREEN-A1** ← **다음**
+- [ ] **RED-A2** + **GREEN-A2**
+- [ ] **RED-A3** + **GREEN-A3**
+- [ ] **RED-A4** + **GREEN-A4**
+- [ ] **RED-A5** + **GREEN-A5**
+- [ ] **RED-A6** + **GREEN-A6**
+- [ ] **RED-A7** + **GREEN-A7**
+- [ ] **RED-A8** + **GREEN-A8**
 
-- [ ] **UT-E01-1** `::TestAcFr0101InvalidSize::test_none_grid_returns_invalid_size_failure`
-- [ ] **UT-E01-2** `::test_empty_list_returns_invalid_size_failure`
-- [ ] **UT-E01-3** `::test_ragged_four_rows_returns_invalid_size_failure`
-- [ ] **UT-E01-4** `::test_three_by_four_grid_returns_invalid_size_failure`
-- [ ] **UT-E01-5** `::test_none_grid_resolve_called_zero_times`
-- [ ] **UT-E01-6** `::test_none_grid_message_exact_prd_match`
-- [ ] **UT-E01-7** `::test_none_grid_failure_result_is_error_response_type`
-- [ ] **UT-E01-8** `::test_scope_excludes_ac_fr01_02_to_05_and_fr02_to_fr05`
-
-**U-IN-04~08** (`test_u_in_04_08_input_validation.py`)
-
-- [ ] **U-IN-04** `::TestUIn04Through08InputValidation::test_u_in_04_minus_one_returns_e004`
-- [ ] **U-IN-05** `::test_u_in_05_seventeen_returns_e004`
-- [ ] **U-IN-06** `::test_u_in_06_duplicate_nonzero_returns_e005`
-- [ ] **U-IN-07** `::test_u_in_07_out_of_range_ninety_nine_returns_e004`
-- [ ] **U-IN-08** `::test_u_in_08_non_list_grid_returns_e001`
-
-**U-FLOW-02** (`test_u_flow_02_invalid_skips_execute.py`)
-
-- [ ] **U-FLOW-02a** `::test_u_flow_02_null_matrix_skips_execute`
-- [ ] **U-FLOW-02b** `::test_u_flow_02_invalid_size_skips_execute`
-- [ ] **U-FLOW-02c** `::test_u_flow_02_invalid_empty_count_skips_execute`
-- [ ] **U-FLOW-02d** `::test_u_flow_02_invalid_range_skips_execute`
-- [ ] **U-FLOW-02e** `::test_u_flow_02_duplicate_skips_execute`
-- [ ] **U-FLOW-02f** `::test_u_flow_02_ragged_grid_skips_execute`
-
-**U-OUT-01~03** (`test_u_out_01_03_output_contract.py`)
-
-- [ ] **U-OUT-01** `::test_u_out_01_success_payload_length_six`
-- [ ] **U-OUT-02** `::test_u_out_02_success_coordinates_one_indexed`
-- [ ] **U-OUT-03** `::test_u_out_03_success_fill_values_in_range`
-
-| Track A | RED 묶음 | GREEN 대기 |
-|---------|----------|------------|
-| AC-FR-01-01 | A0-1~3 ✅ | GREEN 완료 (9) |
-| UT-E01 ~ U-OUT | A1~A8 ⏳ | **22** |
+| Track A | RED+GREEN 묶음 | 남은 GREEN 커밋 |
+|---------|----------------|-----------------|
+| AC-FR-01-01 | A0-1~3 ✅ | — |
+| UT-E01 ~ U-OUT | A1~A8 ⏳ | **8** (묶음당 1커밋) |
 
 ---
 
 ### Track B — Entity/Control (Mock 금지) · Report 02 §1.5.4
 
-#### RED 묶음 — 3건/커밋 (`red` 브랜치)
+**RED / GREEN 동일 ID** — 한 행 = RED 1커밋 + GREEN 1커밋
 
-| ID | 커밋 | 테스트 3건 | 상태 |
-|----|------|------------|------|
-| **RED-B1** | DT-E ① | DT-E01 · DT-E02 · DT-E03 (`test_magic_grid.py` 등 **미작성**) | ⏳ |
-| **RED-B2** | DT-E ② | DT-E04 · DT-E05 · DT-E06 | ⏳ |
-| **RED-B3** | D-VAL ① | `test_d_val_01_g0_complete_magic_true` · `test_d_val_02_row_sum_mismatch` · `test_d_val_03_col_sum_mismatch` | ⏳ |
-| **RED-B4** | D-VAL ② | `test_d_val_04_diagonal_mismatch` · `test_d_val_05_duplicate_false` · `test_d_val_06_zero_in_filled_false` | ⏳ |
-| **RED-B5** | D-LOC/MIS/SOL ① | `test_d_loc_01_g1_row_major_blanks` · `test_d_mis_01_g1_missing_sorted` · `test_d_sol_01_g1_step_a_success` | ⏳ |
-| **RED-B6** | D-SOL ② | `test_d_sol_02_g2_step_b_reverse` · `test_d_sol_03_g3_unsolvable` · `test_d_sol_04_output_contract` | ⏳ |
+| ID | RED (`red`) | GREEN (`green` · 묶음 전건 PASS) | 상태 |
+|----|-------------|----------------------------------|------|
+| **B1** | DT-E01 · E02 · E03 (`test_magic_grid.py` **미작성**) | **GREEN-B1** | ⏳ |
+| **B2** | DT-E04 · E05 · E06 | **GREEN-B2** | ⏳ |
+| **B3** | D-VAL-01 · 02 · 03 | **GREEN-B3** | ⏳ |
+| **B4** | D-VAL-04 · 05 · 06 | **GREEN-B4** | ⏳ |
+| **B5** | D-LOC-01 · D-MIS-01 · D-SOL-01 | **GREEN-B5** | ⏳ |
+| **B6** | D-SOL-02 · 03 · 04 | **GREEN-B6** | ⏳ |
 
-- [ ] **RED-B1** — DT-E ① (3건)
-- [ ] **RED-B2** — DT-E ② (3건)
-- [ ] **RED-B3** — D-VAL ① (3건)
-- [ ] **RED-B4** — D-VAL ② (3건)
-- [ ] **RED-B5** — D-LOC/MIS/SOL ① (3건)
-- [ ] **RED-B6** — D-SOL ② (3건)
+- [ ] **RED-B1** + **GREEN-B1**
+- [ ] **RED-B2** + **GREEN-B2**
+- [ ] **RED-B3** + **GREEN-B3**
+- [ ] **RED-B4** + **GREEN-B4**
+- [ ] **RED-B5** + **GREEN-B5**
+- [ ] **RED-B6** + **GREEN-B6**
 
-#### GREEN — 1 node/커밋 (`green` 브랜치)
-
-- [ ] **D-VAL-01** ~ **D-VAL-06** (`test_d_val_01_06_magic_validation.py`)
-- [ ] **D-LOC-01** (`test_d_loc_01_blank_coords.py`)
-- [ ] **D-MIS-01** (`test_d_mis_01_missing_numbers.py`)
-- [ ] **D-SOL-01** ~ **D-SOL-04** (`test_d_sol_01_04_solution.py`)
-
-| Track B | RED 묶음 | GREEN 대기 |
-|---------|----------|------------|
-| DT-E ~ D-SOL | B1~B6 ⏳ | **12+** |
+| Track B | RED+GREEN 묶음 | 남은 GREEN 커밋 |
+|---------|----------------|-----------------|
+| DT-E ~ D-SOL | B1~B6 ⏳ | **6** (묶음당 1커밋) |
 
 > **제외:** `tests/entity/test_user.py` — 학습용 `User` (마방진 백로그 밖)
 
@@ -339,4 +319,4 @@ MagicSquare_/
 | 2026-05-28 | Report 02 · Prompting 02 · `spec` 브랜치 |
 | 2026-05-28 | Report 03 · Prompting 03 · `.cursorrules` · `User` entity |
 | 2026-05-28 | Report 04 · Prompting 04 · `.cursor/rules/*.mdc` · README 01~04 동기화 |
-| 2026-05-29 | TDD 브랜치 `red`/`green`/`refactoring` · RED 3건/커밋 · GREEN To-Do · AC-FR-01-01 반영 |
+| 2026-05-29 | GREEN = RED 1묶음/1커밋 · REFACTOR 범위 밖 명시 |
