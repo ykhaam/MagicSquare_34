@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from control.puzzle_solver import solution
+from control.solve_partial_magic_square import solution
 from entity.exceptions import UnsolvableDomainError
 from tests.entity.conftest import G1, G2, G3
 

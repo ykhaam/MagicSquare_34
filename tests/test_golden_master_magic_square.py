@@ -9,7 +9,7 @@ import pytest
 
 from boundary.schemas import ErrorResponse
 from boundary.ui_boundary import UIBoundary
-from control.puzzle_solver import solution
+from control.solve_partial_magic_square import solution
 from tests.golden_master.approve import (
     approve_golden_master,
     approve_section,

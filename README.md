@@ -138,7 +138,7 @@ MagicSquare_/
 ├── pyproject.toml
 ├── src/
 │   ├── boundary/             # InputValidator, UIBoundary, screen (Track A)
-│   ├── control/              # puzzle_solver.solution
+│   ├── control/              # solve_partial_magic_square.solution
 │   ├── data/                 # InMemoryMatrixRepository
 │   └── entity/               # MagicGrid, services (Track B)
 ├── tests/
@@ -195,7 +195,7 @@ MagicSquare_/
 | **PyQt6 GUI** | `python -m boundary.screen` · `magicsquare-gui` | ✅ (optional `[gui]`) |
 | **Golden Master** | GM-TC-01~05 · `golden_master_expected.txt` | ✅ [Report 11](./Report/11_Magic-Square-Golden-Master-Regression-Session-Report.md) |
 | **REFACTOR 계획** | ECB gap · 테스트 선행 · P0/P1 슬라이스 | ✅ [Report 12](./Report/12_Magic-Square-REFACTOR-Planning-Session-Report.md) |
-| **REFACTOR 구현** | 유형 1 계약·오류 SSOT (RF-1-1~1-4) | ✅ · 유형 2~3 ⏳ |
+| **REFACTOR 구현** | 유형 1 ✅ · 유형 2 ECB 분리 (RF-2-1~2-6) | ✅ |
 | **커버리지 80%+** | Entity 95% / Boundary 85% / 전체 80% | ⏳ (현재 ~67%) |
 | `develop` / `main` merge | MVP + REFACTOR 마일스톤 | ⏳ |
 
@@ -203,9 +203,8 @@ MagicSquare_/
 
 ## 다음 단계
 
-1. **REFACTOR 유형 2** ([Report 12 §9](./Report/12_Magic-Square-REFACTOR-Planning-Session-Report.md#9-권장-슬라이스-순서-p0--p1)): ECB·역할 분리 (RF-2-1 ~ RF-2-6)
-2. **REFACTOR 유형 3** — 중복·품질·커버리지 80%+
-3. `refactor/refactor` → `develop` merge
+1. **REFACTOR 유형 3** — 중복·품질·커버리지 80%+ (RF-3-1 ~ RF-3-5)
+2. `refactor/refactor` → `develop` merge
 4. **File JSON `MatrixRepository`** (Report 02 옵션 B) — `IT-E03` / `DATA-T03`
 5. 계약 충돌 시 Report **02 우선** · AI 규칙은 **04 + `.mdc`**
 
@@ -349,7 +348,7 @@ python -m pytest \
 ### REFACTOR To-Do (Report 12 · 3유형 체크리스트)
 
 > 상세: [Report 12 §8](./Report/12_Magic-Square-REFACTOR-Planning-Session-Report.md#8-리팩토링-대상-목록-우선순위) · 권장 순서: **유형 1 → 2 → 3**  
-> 현재: `python -m pytest tests/ -q` → **82 passed** · Screen 커버리지 **0%** · 전역 **~67%**
+> 현재: `python -m pytest tests/ -q` → **83 passed**, 2 skipped (UT-GUI·PyQt6) · Screen **0%** · 전역 **~67%**
 
 #### 유형 1 — 계약·오류 SSOT (Boundary Contract)
 
@@ -364,12 +363,12 @@ Boundary 응답 형식·에러 코드·메시지를 Report 02 / PRD와 맞춥니
 
 `boundary → control → entity` 방향을 지키고 Control·Screen·Entity 책임을 나눕니다.
 
-- [ ] **RF-2-1** `entity/services/two_cell_solver.py` 추출 — `puzzle_solver.py` Step A/B·배치·int[6] 조립 분리
-- [ ] **RF-2-2** `puzzle_solver.py` — `MagicGrid.from_raw` 중복 제거 · Control thin orchestration
-- [ ] **RF-2-3** `window.py` — Screen → `UIBoundary(execute=…)` · UT-GUI RED→GREEN (Control 직접 import 제거)
-- [ ] **RF-2-4** `ui_boundary.py` / `magic_square_boundary.py` — re-export vs 실체 SSOT 일원화
-- [ ] **RF-2-5** rename — `puzzle_solver` → `solve_partial_magic_square` (P1)
-- [ ] **RF-2-6** rename — `window` → `main_window` (P2)
+- [x] **RF-2-1** `entity/services/two_cell_solver.py` 추출 — `puzzle_solver.py` Step A/B·배치·int[6] 조립 분리
+- [x] **RF-2-2** `solve_partial_magic_square.py` — `MagicGrid.from_raw` 중복 제거 · Control thin orchestration
+- [x] **RF-2-3** `main_window.py` — Screen → `UIBoundary(execute=…)` · UT-GUI RED→GREEN (Control 직접 import 제거)
+- [x] **RF-2-4** `ui_boundary.py` / `magic_square_boundary.py` — re-export vs 실체 SSOT 일원화
+- [x] **RF-2-5** rename — `puzzle_solver` → `solve_partial_magic_square` (P1)
+- [x] **RF-2-6** rename — `window` → `main_window` (P2)
 
 #### 유형 3 — 중복·품질 정리 (DRY / Cleanup / Coverage)
 
@@ -408,4 +407,4 @@ python -m pytest tests/ --cov=src --cov-report=term-missing
 | 2026-05-29 | Track A/B GREEN 완료 · Data/IT · PyQt6 GUI · [Report 10](./Report/10_Magic-Square-Dual-Track-MVP-and-Screen-GUI-Session-Report.md) |
 | 2026-05-29 | GM-1~2 Golden Master baseline · approve 패턴 · README GM-03 체크리스트 |
 | 2026-05-29 | [Report 11](./Report/11_Magic-Square-Golden-Master-Regression-Session-Report.md) · [Prompting 11](./Prompting/11_Magic-Square-Golden-Master-Regression-Session-Transcript-Prompt.md) |
-| 2026-05-29 | 유형 1 REFACTOR (RF-1-1~1-4) · UT-F01/F02 · DEF-003 · 82 tests |
+| 2026-05-29 | 유형 2 REFACTOR (RF-2-1~2-6) · two_cell_solver · UIBoundary · main_window |

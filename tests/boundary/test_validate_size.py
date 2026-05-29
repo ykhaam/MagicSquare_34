@@ -8,7 +8,7 @@ from unittest.mock import Mock
 import pytest
 
 from boundary.error_codes import INVALID_SIZE_CODE, INVALID_SIZE_MESSAGE
-from boundary.magic_square_boundary import MagicSquareBoundary
+from boundary.ui_boundary import MagicSquareBoundary
 from boundary.schemas import ErrorResponse
 from tests.boundary.ac_fr_01_01_constants import EXCLUDED_AC_MARKERS
 

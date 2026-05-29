@@ -15,7 +15,6 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from boundary.magic_square_boundary import MagicSquareBoundary
 from boundary.error_codes import (
     UI_INTERNAL_CONTRACT_CODE,
     UI_INTERNAL_CONTRACT_MESSAGE,
@@ -35,17 +34,21 @@ from boundary.screen.constants import (
     STYLE_SUCCESS,
     WINDOW_TITLE,
 )
-from control.puzzle_solver import solution
+from boundary.ui_boundary import UIBoundary
 from entity.constants import EMPTY_CELL_VALUE, MAX_CELL_VALUE, MIN_CELL_VALUE
 
 
 class MagicSquareWindow(QMainWindow):
-    """Main window with a 4×4 grid editor and Boundary-backed solve action."""
+    """Main window with a 4×4 grid editor and injected UIBoundary solve handler."""
 
-    def __init__(self) -> None:
-        """Build widgets and wire Boundary solve handler."""
+    def __init__(self, boundary: UIBoundary) -> None:
+        """Build widgets and wire the injected Boundary.
+
+        Args:
+            boundary: UIBoundary instance (wired in ``app`` with Control execute).
+        """
         super().__init__()
-        self._boundary = MagicSquareBoundary(resolve=solution)
+        self._boundary = boundary
         self._cells: list[list[QSpinBox]] = []
         self._status_label = QLabel(STATUS_READY)
         self._result_label = QLabel("")
